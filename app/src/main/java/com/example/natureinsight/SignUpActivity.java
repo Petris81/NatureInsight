@@ -7,11 +7,8 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-public class MainActivity extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity {
 
     private EditText usernameEditText;
     private EditText passwordEditText;
@@ -21,20 +18,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.signup);
 
         supabaseAuth = SupabaseAuth.getInstance();
         usernameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
 
-        findViewById(R.id.login_button).setOnClickListener(v -> handleLogin());
-        findViewById(R.id.signup_button).setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
-            startActivity(intent);
-        });
+        findViewById(R.id.signup_button).setOnClickListener(v -> handleSignUp());
     }
 
-    private void handleLogin() {
+    private void handleSignUp() {
         String email = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
@@ -44,16 +37,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Show loading state
-        findViewById(R.id.login_button).setEnabled(false);
+        findViewById(R.id.signup_button).setEnabled(false);
 
-        supabaseAuth.signIn(email, password, new SupabaseAuth.AuthCallback() {
+        supabaseAuth.signUp(email, password, new SupabaseAuth.AuthCallback() {
             @Override
             public void onSuccess(String token) {
                 runOnUiThread(() -> {
-                    findViewById(R.id.login_button).setEnabled(true);
-                    Toast.makeText(MainActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                    supabaseAuth.setCurrentUserEmail(email);
-                    Intent intent = new Intent(MainActivity.this, AccountActivity.class);
+                    findViewById(R.id.signup_button).setEnabled(true);
+                    Toast.makeText(SignUpActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(SignUpActivity.this, AccountActivity.class);
                     startActivity(intent);
                     finish();
                 });
@@ -62,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(String error) {
                 runOnUiThread(() -> {
-                    findViewById(R.id.login_button).setEnabled(true);
-                    Toast.makeText(MainActivity.this, "Login failed: " + error, Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.signup_button).setEnabled(true);
+                    Toast.makeText(SignUpActivity.this, "Sign up failed: " + error, Toast.LENGTH_SHORT).show();
                 });
             }
         });

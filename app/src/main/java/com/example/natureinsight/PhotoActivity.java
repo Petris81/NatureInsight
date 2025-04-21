@@ -72,7 +72,7 @@ public class PhotoActivity extends AppCompatActivity {
             intent.putExtra("photo_bitmap", photo);
             intent.putExtra("plant_name", "Inconnu");
             intent.putExtra("observation_date", currentDate);
-
+            //we will assume at the point we have pass the phto through the API and have all info needed
             startActivity(intent);
             finish();
         } else {
