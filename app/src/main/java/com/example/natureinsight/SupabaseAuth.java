@@ -5,16 +5,22 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.MultipartBody;
 
 public class SupabaseAuth {
     private static final String TAG = "SupabaseAuth";
@@ -57,6 +63,16 @@ public class SupabaseAuth {
 
     public interface DataListCallback {
         void onSuccess(JsonArray data);
+        void onError(String error);
+    }
+
+    public interface PlantObservationCallback {
+        void onSuccess(JsonObject data);
+        void onError(String error);
+    }
+
+    public interface FileUploadCallback {
+        void onSuccess(String fileUrl);
         void onError(String error);
     }
 
@@ -177,6 +193,120 @@ public class SupabaseAuth {
         executeDataRequest(request, callback);
     }
 
+    public void insertPlantObservation(
+            String plantName,
+            double latitude,
+            double longitude,
+            int confidenceInIdentification,
+            int altitudeOfObservation,
+            String pictureOfObservation,
+            PlantObservationCallback callback) {
+        
+        if (!isAuthenticated()) {
+            callback.onError("User not authenticated");
+            return;
+        }
+
+        JsonObject observation = new JsonObject();
+        observation.addProperty("userid", currentUserId);
+        observation.addProperty("plantname", plantName);
+        observation.addProperty("observationdatetime", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        observation.addProperty("latitude", String.valueOf(latitude));
+        observation.addProperty("longitude", String.valueOf(longitude));
+        observation.addProperty("confidenceinidentification", confidenceInIdentification);
+        observation.addProperty("altitudeofobservation", altitudeOfObservation);
+        observation.addProperty("pictureofobservation", pictureOfObservation);
+
+        // Log the JSON for debugging
+        Log.d(TAG, "Inserting observation: " + observation.toString());
+
+        RequestBody body = RequestBody.create(observation.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/plant_observations")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + currentUserToken)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Prefer", "return=representation")
+                .post(body)
+                .build();
+
+        // Create a DataCallback that delegates to the PlantObservationCallback
+        DataCallback dataCallback = new DataCallback() {
+            @Override
+            public void onSuccess(JsonObject data) {
+                callback.onSuccess(data);
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        };
+
+        executeDataRequest(request, dataCallback);
+    }
+
+    public void getPlantObservations(DataListCallback callback) {
+        if (!isAuthenticated()) {
+            callback.onError("User not authenticated");
+            return;
+        }
+
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/plant_observations?userID=eq." + currentUserId)
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + currentUserToken)
+                .get()
+                .build();
+
+        executeDataListRequest(request, callback);
+    }
+
+    // File Upload Methods
+    public void uploadImage(byte[] imageData, String fileName, FileUploadCallback callback) {
+        if (!isAuthenticated()) {
+            callback.onError("User not authenticated");
+            return;
+        }
+
+        // Create a unique file path using the user's ID and a UUID
+        String filePath = currentUserId + "/" + fileName;
+
+        // Create multipart request body
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", fileName,
+                        RequestBody.create(MediaType.parse("image/jpeg"), imageData))
+                .build();
+
+        // Create the upload request
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/storage/v1/object/plantimages/" + filePath)
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + currentUserToken)
+                .post(requestBody)
+                .build();
+
+        // Execute the request
+        new Thread(() -> {
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    String errorBody = response.body() != null ? response.body().string() : "Unknown error";
+                    Log.e(TAG, "Upload failed: " + errorBody);
+                    callback.onError(errorBody);
+                    return;
+                }
+
+                // Construct the public URL for the uploaded file
+                String fileUrl = SUPABASE_URL + "/storage/v1/object/public/plantimages/" + filePath;
+                callback.onSuccess(fileUrl);
+            } catch (IOException e) {
+                Log.e(TAG, "Upload failed", e);
+                callback.onError(e.getMessage());
+            }
+        }).start();
+    }
+
     private void executeAuthRequest(Request request, AuthCallback callback) {
         new Thread(() -> {
             try (Response response = client.newCall(request).execute()) {
@@ -210,8 +340,31 @@ public class SupabaseAuth {
                 }
 
                 String responseBody = response.body().string();
-                JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
-                callback.onSuccess(jsonResponse);
+                Log.d(TAG, "Response body: " + responseBody);
+                
+                // Parse the response as a JsonElement first to check its type
+                JsonElement jsonElement = JsonParser.parseString(responseBody);
+                
+                if (jsonElement.isJsonArray()) {
+                    // If it's an array, take the first element if available
+                    JsonArray jsonArray = jsonElement.getAsJsonArray();
+                    if (jsonArray.size() > 0) {
+                        JsonObject jsonObject = jsonArray.get(0).getAsJsonObject();
+                        callback.onSuccess(jsonObject);
+                    } else {
+                        // Return an empty object if the array is empty
+                        callback.onSuccess(new JsonObject());
+                    }
+                } else if (jsonElement.isJsonObject()) {
+                    // If it's already an object, use it directly
+                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    callback.onSuccess(jsonObject);
+                } else {
+                    // Handle other cases (like primitives)
+                    JsonObject result = new JsonObject();
+                    result.add("value", jsonElement);
+                    callback.onSuccess(result);
+                }
             } catch (IOException e) {
                 Log.e(TAG, "Request failed", e);
                 callback.onError(e.getMessage());
@@ -230,8 +383,28 @@ public class SupabaseAuth {
                 }
 
                 String responseBody = response.body().string();
-                JsonArray jsonResponse = gson.fromJson(responseBody, JsonArray.class);
-                callback.onSuccess(jsonResponse);
+                Log.d(TAG, "Response body: " + responseBody);
+                
+                // Parse the response as a JsonElement first to check its type
+                JsonElement jsonElement = JsonParser.parseString(responseBody);
+                
+                if (jsonElement.isJsonArray()) {
+                    // If it's an array, use it directly
+                    JsonArray jsonArray = jsonElement.getAsJsonArray();
+                    callback.onSuccess(jsonArray);
+                } else if (jsonElement.isJsonObject()) {
+                    // If it's an object, wrap it in an array
+                    JsonArray jsonArray = new JsonArray();
+                    jsonArray.add(jsonElement);
+                    callback.onSuccess(jsonArray);
+                } else {
+                    // Handle other cases (like primitives)
+                    JsonArray jsonArray = new JsonArray();
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("value", jsonElement.getAsString());
+                    jsonArray.add(jsonObject);
+                    callback.onSuccess(jsonArray);
+                }
             } catch (IOException e) {
                 Log.e(TAG, "Request failed", e);
                 callback.onError(e.getMessage());

@@ -45,7 +45,7 @@ public class SignUpActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     findViewById(R.id.signup_button).setEnabled(true);
                     Toast.makeText(SignUpActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(SignUpActivity.this, AccountActivity.class);
+                    Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
                 });
