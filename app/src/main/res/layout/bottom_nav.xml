@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="#E4EFE4"
+    android:gravity="center"
+    android:weightSum="4">
+
+    <ImageButton
+        android:id="@+id/nav_encyclopedia"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:src="@drawable/icons8wordbook50"
+        android:background="@android:color/transparent"
+        android:contentDescription="Encyclopédie"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:maxWidth="48dp"
+        android:maxHeight="48dp"
+        />
+
+    <ImageButton
+        android:id="@+id/nav_camera"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:src="@drawable/icons8camera24"
+        android:background="@android:color/transparent"
+        android:contentDescription="Caméra"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:maxWidth="48dp"
+        android:maxHeight="48dp"
+        />
+
+    <ImageButton
+        android:id="@+id/nav_history"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:src="@drawable/icons8clock48"
+        android:background="@android:color/transparent"
+        android:contentDescription="Historique"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:maxWidth="48dp"
+        android:maxHeight="48dp"
+        />
+
+    <ImageButton
+        android:id="@+id/nav_account"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:src="@drawable/icons8user90"
+        android:background="@android:color/transparent"
+        android:contentDescription="Compte"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:maxWidth="48dp"
+        android:maxHeight="48dp"
+        />
+</LinearLayout>

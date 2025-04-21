@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NatureInsight</string>
+    <string name="disconnected">Vous êtes déconnecté</string>
+    <string name="username">Nom d\'utilisateur</string>
+    <string name="password">Mot de passe</string>
+    <string name="login">Connexion</string>
+    <string name="logout">Deconnexion</string>"
+    <string name="connected">Vous êtes connecté en tant que :\n</string>
+    <string name="encyclopedia">Encyclopédie</string>
+    <string name="history">Historique</string>
+    <string name="sort_hint">Rechercher une plante</string>
+    <string name="search">Rechercher</string>
+    <string name="learn_more">Learn More</string>
+    <string name="common_name">Nom Courant</string>
+    <string name="Scient_name">Nom Scientifique</string>
+    <string name="scores">Scores</string>
+    <string name="ni_fixation">Fixation de l\'azote :</string>
+    <string name="sol_structure">Structure du sol :</string>
+    <string name="water_retention">Retention de l\'eau :</string>
+    <string name="observation">Observation</string>"
+    <string name="observation_date">Date de l\'observation :</string>"
+    <string name="position">Position :</string>
+    <string name="confidence">Niveau de confiance de l\'identification :</string>
+    <string name="altitude">Altitude :</string>
+</resources>
