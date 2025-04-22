@@ -23,4 +23,6 @@
     <string name="position">Position :</string>
     <string name="confidence">Niveau de confiance de l\'identification :</string>
     <string name="altitude">Altitude :</string>
+    <string name="no_account">Vous n\'avez pas de compte ?</string>
+    <string name="create_account">Créer un compte</string>
 </resources>

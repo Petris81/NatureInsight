@@ -2,6 +2,7 @@ package com.example.natureinsight;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import java.util.List;
 
@@ -33,12 +39,21 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
         HistoryItem item = items.get(position);
         holder.titleText.setText(item.title);
-        holder.dateText.setText(item.date);
+        
+        // Format the date to be more readable
+        String formattedDate = formatDate(item.date);
+        holder.dateText.setText(formattedDate);
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, PlantInfoActivity.class);
             intent.putExtra("plant_name", item.title);
-            intent.putExtra("plant_date", item.date);
+            intent.putExtra("plant_date", formattedDate);
+            intent.putExtra("plant_image", item.pictureUrl);
+            intent.putExtra("plant_latitude", item.latitude);
+            intent.putExtra("plant_longitude", item.longitude);
+            intent.putExtra("plant_confidence", item.confidenceInIdentification);
+            intent.putExtra("plant_altitude", item.altitudeOfObservation);
+            intent.putExtra("plant_id", item.id);
             context.startActivity(intent);
         });
     }
@@ -46,6 +61,23 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    /**
+     * Formats the ISO date string to a more readable format
+     */
+    private String formatDate(String isoDate) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault());
+            Date date = inputFormat.parse(isoDate);
+            
+            // Format the date to a more readable format
+            SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            // If parsing fails, return the original string
+            return isoDate;
+        }
     }
 
     public static class HistoryViewHolder extends RecyclerView.ViewHolder {
