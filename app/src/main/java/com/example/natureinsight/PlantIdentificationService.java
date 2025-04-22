@@ -27,7 +27,7 @@ import okhttp3.Response;
 public class PlantIdentificationService {
     private static final String TAG = "PlantIdentificationService";
     private static final String API_URL = "https://api.plant.id/v2/identify";
-    private static final String API_KEY = "2b10k3qr4CbgVHFWVb54c0Ug6u";
+    private static final String API_KEY = "2b10o3slmiJWarzGzRInISf8w";
     private static final MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
@@ -117,6 +117,7 @@ public class PlantIdentificationService {
 
         // Log the request URL for debugging
         Log.d(TAG, "Sending request to: " + request.url());
+        Log.d(TAG, "request as a string: " + request.toString());
         Log.d(TAG, "Using API key: " + API_KEY);
         // Execute the request
         new Thread(() -> {

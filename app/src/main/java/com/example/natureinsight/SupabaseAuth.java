@@ -1,5 +1,7 @@
 package com.example.natureinsight;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -33,11 +35,18 @@ public class SupabaseAuth {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
+    
+    // SharedPreferences keys
+    private static final String PREFS_NAME = "NatureInsightPrefs";
+    private static final String KEY_AUTH_TOKEN = "auth_token";
+    private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_USER_EMAIL = "user_email";
 
     private static SupabaseAuth instance;
     private String currentUserToken;
     private String currentUserId;
     private String currentUserEmail;
+    private Context appContext;
 
     /**
      * Private constructor to prevent direct instantiation.
@@ -57,9 +66,57 @@ public class SupabaseAuth {
         }
         return instance;
     }
+    
+    /**
+     * Initializes the SupabaseAuth instance with the application context.
+     * This should be called in the Application class or MainActivity's onCreate.
+     * 
+     * @param context The application context
+     */
+    public void init(Context context) {
+        this.appContext = context.getApplicationContext();
+        loadStoredCredentials();
+    }
+    
+    /**
+     * Loads stored credentials from SharedPreferences.
+     */
+    private void loadStoredCredentials() {
+        if (appContext == null) return;
+        
+        SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        currentUserToken = prefs.getString(KEY_AUTH_TOKEN, null);
+        currentUserId = prefs.getString(KEY_USER_ID, null);
+        currentUserEmail = prefs.getString(KEY_USER_EMAIL, null);
+        
+        Log.d(TAG, "Loaded stored credentials: " + (currentUserToken != null ? "Token exists" : "No token"));
+    }
+    
+    /**
+     * Saves the current credentials to SharedPreferences.
+     */
+    private void saveCredentials() {
+        if (appContext == null) return;
+        
+        SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        
+        if (currentUserToken != null) {
+            editor.putString(KEY_AUTH_TOKEN, currentUserToken);
+            editor.putString(KEY_USER_ID, currentUserId);
+            editor.putString(KEY_USER_EMAIL, currentUserEmail);
+        } else {
+            editor.remove(KEY_AUTH_TOKEN);
+            editor.remove(KEY_USER_ID);
+            editor.remove(KEY_USER_EMAIL);
+        }
+        
+        editor.apply();
+    }
 
     public void setCurrentUserEmail(String email) {
         this.currentUserEmail = email;
+        saveCredentials();
     }
 
     public String getCurrentUserEmail() {
@@ -164,6 +221,8 @@ public class SupabaseAuth {
     public void signOut() {
         currentUserToken = null;
         currentUserId = null;
+        currentUserEmail = null;
+        saveCredentials();
     }
 
     /**
@@ -488,22 +547,26 @@ public class SupabaseAuth {
      */
     private void executeAuthRequest(Request request, AuthCallback callback) {
         new Thread(() -> {
-            try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    String errorBody = response.body() != null ? response.body().string() : "Unknown error";
-                    Log.e(TAG, "Request failed: " + errorBody);
-                    callback.onError(errorBody);
-                    return;
-                }
-
+            try {
+                Response response = client.newCall(request).execute();
                 String responseBody = response.body().string();
-                JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
-                currentUserToken = jsonResponse.get("access_token").getAsString();
-                currentUserId = jsonResponse.get("user").getAsJsonObject().get("id").getAsString();
-                callback.onSuccess(currentUserToken);
+                
+                if (response.isSuccessful()) {
+                    JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
+                    currentUserToken = jsonResponse.get("access_token").getAsString();
+                    currentUserId = jsonResponse.get("user").getAsJsonObject().get("id").getAsString();
+                    
+                    // Save credentials after successful authentication
+                    saveCredentials();
+                    
+                    callback.onSuccess(currentUserToken);
+                } else {
+                    Log.e(TAG, "Auth error: " + responseBody);
+                    callback.onError("Authentication failed: " + responseBody);
+                }
             } catch (IOException e) {
-                Log.e(TAG, "Request failed", e);
-                callback.onError(e.getMessage());
+                Log.e(TAG, "Auth request failed", e);
+                callback.onError("Network error: " + e.getMessage());
             }
         }).start();
     }

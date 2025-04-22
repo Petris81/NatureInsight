@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText usernameEditText;
     private EditText passwordEditText;
     private SupabaseAuth supabaseAuth;
+    private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +24,23 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        // Initialize SupabaseAuth
         supabaseAuth = SupabaseAuth.getInstance();
+        supabaseAuth.init(this);
+        
+        // Initialize DatabaseManager
+        databaseManager = DatabaseManager.getInstance();
+        databaseManager.init(this);
+        
+        // Check if user is already logged in
+        if (supabaseAuth.isAuthenticated()) {
+            // User is already logged in, navigate to AccountActivity
+            Intent intent = new Intent(MainActivity.this, AccountActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+        
         usernameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
 
@@ -32,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
             startActivity(intent);
         });
+        int count = databaseManager.loadFromCSV(this, "data.csv");
+        if (count == 0) {
+            // TODO : think about how to handle it
+        }
     }
 
     private void handleLogin() {
@@ -67,5 +88,14 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Close database connection when the activity is destroyed
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
     }
 }
