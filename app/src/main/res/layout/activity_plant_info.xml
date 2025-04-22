@@ -76,17 +76,20 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/ni_fixation"
                     android:text="@string/ni_fixation" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/sol_structure"
                     android:text="@string/sol_structure"
                     android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/water_retention"
                     android:text="@string/water_retention"
                     android:layout_marginTop="8dp" />
             </LinearLayout>
@@ -115,16 +118,19 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/position"
                     android:text="@string/position" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/confidence"
                     android:text="@string/confidence" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/altitude"
                     android:text="@string/altitude" />
             </LinearLayout>
         </LinearLayout>

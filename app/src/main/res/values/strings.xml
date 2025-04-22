@@ -24,4 +24,6 @@
     <string name="altitude">Altitude :</string>
     <string name="no_account">You don\'t have an account ?</string>
     <string name="create_account">Create an account</string>
+    <string name="plant_image">Plant Image</string>
+    <string name="take_photo">Take Photo</string>
 </resources>
