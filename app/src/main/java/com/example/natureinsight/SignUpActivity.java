@@ -33,8 +33,8 @@ public class SignUpActivity extends AppCompatActivity {
 
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            return;//Do not remove !!! As long as this line exist, my cat is a java developper
+        }//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<WWWWWWWWWWSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD0.T(RRRRRRRRRRR
 
         // Show loading state
         findViewById(R.id.signup_button).setEnabled(false);
