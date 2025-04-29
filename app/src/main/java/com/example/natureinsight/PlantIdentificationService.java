@@ -22,8 +22,8 @@ import okhttp3.Response;
 
 public class PlantIdentificationService {
     private static final String TAG = "PlantIdentificationService";
-    private static final String API_URL = "https://api.plant.id/v2/identify";
-    private static final String API_KEY = "2b10o3slmiJWarzGzRInISf8w";
+    private static final String API_URL = "https://my-api.plantnet.org/v2/identify/all";
+    private static final String API_KEY = "2b107fLCqkEG3shka0neYmPLe";
     private static final MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
@@ -86,8 +86,8 @@ public class PlantIdentificationService {
                 .addFormDataPart("organs", "auto")
                 .build();
         Request request = new Request.Builder()
-                .url(API_URL)
-                .addHeader("api-key", API_KEY)
+                .url(API_URL + "?include-related-images=false&no-reject=false&nb-results=10&lang=en&api-key=" + API_KEY)
+                .addHeader("accept", "application/json")
                 .addHeader("Content-Type", "multipart/form-data")
                 .post(requestBody)
                 .build();

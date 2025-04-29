@@ -1,0 +1,219 @@
+@startuml NatureInsight Architecture
+
+' Define styles
+skinparam class {
+  BackgroundColor LightBlue
+  ArrowColor Black
+  BorderColor Black
+}
+
+' Define packages
+package "com.example.natureinsight" {
+  
+  ' Activities
+  class MainActivity {
+    - EditText usernameEditText
+    - EditText passwordEditText
+    - SupabaseAuth supabaseAuth
+    - DatabaseManager databaseManager
+    + onCreate()
+    - handleLogin()
+  }
+  
+  class SignUpActivity {
+    - EditText emailEditText
+    - EditText passwordEditText
+    - SupabaseAuth supabaseAuth
+    + onCreate()
+    - handleSignUp()
+  }
+  
+  class AccountActivity {
+    - SupabaseAuth supabaseAuth
+    + onCreate()
+    - handleSignOut()
+  }
+  
+  class PhotoActivity {
+    - SupabaseAuth supabaseAuth
+    - PlantIdentificationService plantIdentificationService
+    - FusedLocationProviderClient fusedLocationClient
+    - Location currentLocation
+    - int altitudeOfObservation
+    - int confidenceInIdentification
+    - String plantName
+    + onCreate()
+    - openCamera()
+    - getCurrentLocation()
+    - identifyPlant()
+    - uploadImageToSupabase()
+  }
+  
+  class PlantInfoActivity {
+    - TextView plantNameText, dateText, positionText, altitudeText, confidenceText
+    - ImageView imageView
+    - SupabaseAuth supabaseAuth
+    + onCreate()
+  }
+  
+  class HistoryActivity {
+    - RecyclerView historyList
+    - HistoryAdapter adapter
+    - List<HistoryItem> items
+    - SupabaseAuth supabaseAuth
+    + onCreate()
+    - loadHistoryFromSupabase()
+  }
+  
+  class EncyclopediaActivity {
+    - RecyclerView encyclopediaList
+    - EncyclopediaAdapter adapter
+    - List<EncyclopediaItem> items
+    - List<EncyclopediaItem> allItems
+    + onCreate()
+  }
+  
+  ' Services
+  class SupabaseAuth {
+    - static SupabaseAuth instance
+    - String currentUserToken
+    - String currentUserId
+    - String currentUserEmail
+    - Context appContext
+    + {static} getInstance()
+    + init(Context)
+    + signUp(String, String, AuthCallback)
+    + signIn(String, String, AuthCallback)
+    + signOut()
+    + isAuthenticated()
+    + insert(String, JsonObject, DataCallback)
+    + select(String, String, DataListCallback)
+    + update(String, String, JsonObject, DataCallback)
+    + delete(String, String, DataCallback)
+    + uploadImage(byte[], String, FileUploadCallback)
+  }
+  
+  class DatabaseManager {
+    - static DatabaseManager instance
+    - DatabaseHelper dbHelper
+    - SQLiteDatabase database
+    + {static} getInstance()
+    + init(Context)
+    + insertEcosystemService(String, String, float, float)
+    + queryEcosystemServices(String, String)
+    + loadFromCSV(Context, String)
+    + close()
+  }
+  
+  class PlantIdentificationService {
+    - static final String API_URL
+    - static final String API_KEY
+    + identifyPlant(Bitmap, PlantIdentificationCallback)
+  }
+  
+  class EcosystemService {
+    - long id
+    - String service
+    - String species
+    - float value
+    - float reliability
+    + getters/setters
+  }
+  
+  ' Models
+  class HistoryItem {
+    + String title
+    + String date
+    + String pictureUrl
+    + double latitude
+    + double longitude
+    + int confidenceInIdentification
+    + int altitudeOfObservation
+    + String id
+    + HistoryItem(String, String)
+    + HistoryItem(JsonObject)
+  }
+  
+  class EncyclopediaItem {
+    + String name
+    + String description
+    + EncyclopediaItem(String, String)
+  }
+  
+  ' Adapters
+  class HistoryAdapter {
+    - List<HistoryItem> items
+    - Context context
+    + onCreateViewHolder()
+    + onBindViewHolder()
+    + getItemCount()
+  }
+  
+  class EncyclopediaAdapter {
+    - List<EncyclopediaItem> items
+    + onCreateViewHolder()
+    + onBindViewHolder()
+    + getItemCount()
+  }
+  
+  ' Interfaces
+  interface "AuthCallback" {
+    + onSuccess(String)
+    + onError(String)
+  }
+  
+  interface "DataCallback" {
+    + onSuccess(JsonObject)
+    + onError(String)
+  }
+  
+  interface "DataListCallback" {
+    + onSuccess(JsonArray)
+    + onError(String)
+  }
+  
+  interface "FileUploadCallback" {
+    + onSuccess(String)
+    + onError(String)
+  }
+  
+  interface "PlantIdentificationCallback" {
+    + onSuccess(PlantIdentificationResult)
+    + onError(String)
+  }
+  
+  class "PlantIdentificationResult" {
+    - String scientificName
+    - String commonName
+    - double confidence
+    - String family
+    - String genus
+    - List<String> commonNames
+    + getters
+  }
+}
+
+' Relationships
+MainActivity --> SupabaseAuth : uses
+MainActivity --> DatabaseManager : uses
+SignUpActivity --> SupabaseAuth : uses
+AccountActivity --> SupabaseAuth : uses
+PhotoActivity --> SupabaseAuth : uses
+PhotoActivity --> PlantIdentificationService : uses
+PlantInfoActivity --> SupabaseAuth : uses
+HistoryActivity --> SupabaseAuth : uses
+HistoryActivity --> HistoryAdapter : uses
+HistoryAdapter --> HistoryItem : adapts
+EncyclopediaActivity --> EncyclopediaAdapter : uses
+EncyclopediaAdapter --> EncyclopediaItem : adapts
+DatabaseManager --> EcosystemService : manages
+
+' Fixed callback relationships
+SupabaseAuth ..> AuthCallback : uses
+SupabaseAuth ..> DataCallback : uses
+SupabaseAuth ..> DataListCallback : uses
+SupabaseAuth ..> FileUploadCallback : uses
+PlantIdentificationService ..> PlantIdentificationCallback : uses
+PlantIdentificationService --> PlantIdentificationResult : creates
+
+@enduml 
