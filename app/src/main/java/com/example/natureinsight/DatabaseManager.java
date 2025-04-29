@@ -74,23 +74,14 @@ public class DatabaseManager {
             onCreate(db);
         }
     }
-    
-    /**
-     * insert a ecosystem record in the database
-     * 
-     * @param service The ecosystem name
-     * @param species species name
-     * @param value value of the service
-     * @param reliability reliability of the value
-     * @return Id of the iserted row, else -1
-     */
+
     public long insertEcosystemService(String service, String species, float value, float reliability) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_SERVICE, service);
         values.put(COLUMN_SPECIES, species);
         values.put(COLUMN_VALUE, value);
         values.put(COLUMN_RELIABILITY, reliability);
-        
+
         return database.insert(TABLE_ECOSYSTEM_SERVICES, null, values);
     }
     
