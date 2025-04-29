@@ -47,31 +47,22 @@ public class PlantInfoActivity extends AppCompatActivity {
         positionText.setText(positionText.getText()+" Lat:" + plantLatitude + ", Long:" + plantLongitude);
         altitudeText.setText(getString(R.string.altitude) + " " + getIntent().getStringExtra("plant_altitude"));
         confidenceText.setText(getString(R.string.confidence) + " " + plantConfidence);
-        // Handle image loading
         Bitmap photo = getIntent().getParcelableExtra("photo_bitmap");
         if (photo != null) {
-            // Direct bitmap from camera
             imageView.setImageBitmap(photo);
         } else {
-            // Image from history
             String imageUrl = getIntent().getStringExtra("plant_image");
             if (imageUrl != null && !imageUrl.isEmpty()) {
-                // Extract the file path from the full URL
                 String filePath = extractFilePath(imageUrl);
                 if (filePath != null) {
-                    // Get a signed URL for the image
                     supabaseAuth.getSignedImageUrl(filePath, new SupabaseAuth.FileUploadCallback() {
                         @Override
                         public void onSuccess(String signedUrl) {
-                            // Load the image using the signed URL
                             runOnUiThread(() -> {
-                                // Construct the full URL with the Supabase domain
-                                // Check if the signedUrl already contains the domain
                                 String finalUrl;
                                 if (signedUrl.contains("supabase.co")) {
                                     finalUrl = signedUrl;
                                 } else {
-                                    // Add the domain if it's not already there
                                     finalUrl = SUPABASE_URL +"/storage/v1"+ signedUrl;
                                 }
                                 Log.d(TAG, "signedUrl: " + signedUrl);
@@ -80,7 +71,7 @@ public class PlantInfoActivity extends AppCompatActivity {
                                 
                                 Glide.with(PlantInfoActivity.this)
                                         .load(finalUrl)
-                                        .diskCacheStrategy(DiskCacheStrategy.NONE) // Don't cache the signed URL
+                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                                         .into(imageView);
                             });
                         }
@@ -95,19 +86,15 @@ public class PlantInfoActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    // If we can't extract the file path, try loading the URL directly
-                    // This might work if the URL is already a signed URL or if the bucket is public
                     final String finalUrl = formatUrl(imageUrl);
                         
                     Glide.with(this)
                             .load(finalUrl)
-                            .diskCacheStrategy(DiskCacheStrategy.NONE) // Don't cache the signed URL
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
                             .into(imageView);
                 }
             }
         }
-
-        // Navigation buttons
         findViewById(R.id.nav_encyclopedia).setOnClickListener(v ->
                 startActivity(new Intent(this, EncyclopediaActivity.class)));
 
@@ -120,28 +107,16 @@ public class PlantInfoActivity extends AppCompatActivity {
         findViewById(R.id.nav_account).setOnClickListener(v ->
                 startActivity(new Intent(this, AccountActivity.class)));
     }
-
-    /**
-     * Extracts the file path from a Supabase storage URL
-     * Example: https://pnwcnyojlyuzvzfzcmtm.supabase.co/storage/v1/object/public/plantimages/user123/image.jpg
-     * Returns: user123/image.jpg
-     */
     private String formatUrl(String url) {
         if (url == null || url.isEmpty()) {
             return url;
         }
-
-        // If the URL already has a domain, return it as is
         if (url.contains("supabase.co")) {
             return url;
         }
-
-        // Remove any leading slashes
         while (url.startsWith("/")) {
             url = url.substring(1);
         }
-
-        // Add the Supabase domain if the URL doesn't have one
         if (!url.startsWith("http")) {
             url = SUPABASE_URL + "/storage/v1/object/public/plantimages/" + url;
         }
@@ -150,10 +125,8 @@ public class PlantInfoActivity extends AppCompatActivity {
     }
     private String extractFilePath(String url) {
         try {
-            // Find the index of "plantimages/" in the URL
             int startIndex = url.indexOf("plantimages/");
             if (startIndex != -1) {
-                // Add the length of "plantimages/" to get to the start of the file path
                 startIndex += "plantimages/".length();
                 return url.substring(startIndex);
             }

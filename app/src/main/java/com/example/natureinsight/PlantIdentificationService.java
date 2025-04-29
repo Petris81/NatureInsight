@@ -20,10 +20,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-/**
- * Service class for handling plant identification API calls.
- * Uses the Plant.id API to identify plants from images.
- */
 public class PlantIdentificationService {
     private static final String TAG = "PlantIdentificationService";
     private static final String API_URL = "https://api.plant.id/v2/identify";
@@ -32,17 +28,10 @@ public class PlantIdentificationService {
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
 
-    /**
-     * Interface for plant identification callbacks.
-     */
     public interface PlantIdentificationCallback {
         void onSuccess(PlantIdentificationResult result);
         void onError(String error);
     }
-
-    /**
-     * Result class for plant identification.
-     */
     public static class PlantIdentificationResult {
         private String scientificName;
         private String commonName;
@@ -86,40 +75,25 @@ public class PlantIdentificationService {
         }
     }
 
-    /**
-     * Identifies a plant from a bitmap image.
-     * 
-     * @param bitmap The image to identify
-     * @param callback The callback to handle the response
-     */
     public void identifyPlant(Bitmap bitmap, PlantIdentificationCallback callback) {
-        // Convert bitmap to JPEG byte array
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);
         byte[] imageBytes = stream.toByteArray();
-
-        // Create multipart request body
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("images", "plant.jpg",
                         RequestBody.create(MEDIA_TYPE_JPEG, imageBytes))
                 .addFormDataPart("organs", "auto")
                 .build();
-
-
-        // Create the request with API key in the header
         Request request = new Request.Builder()
                 .url(API_URL)
                 .addHeader("api-key", API_KEY)
                 .addHeader("Content-Type", "multipart/form-data")
                 .post(requestBody)
                 .build();
-
-        // Log the request URL for debugging
         Log.d(TAG, "Sending request to: " + request.url());
         Log.d(TAG, "request as a string: " + request.toString());
         Log.d(TAG, "Using API key: " + API_KEY);
-        // Execute the request
         new Thread(() -> {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
@@ -128,22 +102,13 @@ public class PlantIdentificationService {
                     callback.onError("Identification failed: " + response.code());
                     return;
                 }
-
                 String responseBody = response.body().string();
                 Log.d(TAG, "Identification response: " + responseBody);
-                
-                // Parse the response
                 JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
-                
-                // Check if we have results
                 if (jsonResponse.has("results") && jsonResponse.get("results").getAsJsonArray().size() > 0) {
                     JsonObject bestResult = jsonResponse.get("results").getAsJsonArray().get(0).getAsJsonObject();
-                    
-                    // Extract species information
                     JsonObject species = bestResult.get("species").getAsJsonObject();
                     String scientificName = species.get("scientificNameWithoutAuthor").getAsString();
-                    
-                    // Extract common names
                     List<String> commonNames = new ArrayList<>();
                     if (species.has("commonNames") && species.get("commonNames").getAsJsonArray().size() > 0) {
                         JsonArray commonNamesArray = species.get("commonNames").getAsJsonArray();
@@ -151,14 +116,8 @@ public class PlantIdentificationService {
                             commonNames.add(element.getAsString());
                         }
                     }
-                    
-                    // Get the first common name or use scientific name if none available
                     String commonName = commonNames.isEmpty() ? scientificName : commonNames.get(0);
-                    
-                    // Extract confidence score
-                    double confidence = bestResult.get("score").getAsDouble() * 100; // Convert to percentage
-                    
-                    // Extract family and genus
+                    double confidence = bestResult.get("score").getAsDouble() * 100;
                     String family = "";
                     String genus = "";
                     if (species.has("family")) {
@@ -169,8 +128,6 @@ public class PlantIdentificationService {
                         genus = species.get("genus").getAsJsonObject()
                                 .get("scientificNameWithoutAuthor").getAsString();
                     }
-                    
-                    // Create and return the result
                     PlantIdentificationResult result = new PlantIdentificationResult(
                             scientificName, commonName, confidence, family, genus, commonNames);
                     callback.onSuccess(result);

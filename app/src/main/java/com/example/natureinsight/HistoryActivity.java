@@ -31,25 +31,21 @@ public class HistoryActivity extends AppCompatActivity {
     private HistoryAdapter adapter;
     private List<HistoryItem> items;
     private SupabaseAuth supabaseAuth;
-    private ProgressBar progressBar;
-    private TextView emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
-        // Initialize SupabaseAuth
+        // init SupabaseAuth
         supabaseAuth = SupabaseAuth.getInstance();
 
-        // Initialize views
+        // init views
         historyList = findViewById(R.id.history_list);
-        progressBar = findViewById(R.id.progress_bar);
-        emptyView = findViewById(R.id.empty_view);
         
         historyList.setLayoutManager(new LinearLayoutManager(this));
 
-        // Initialize empty list
+        // init empty list
         items = new ArrayList<>();
         adapter = new HistoryAdapter(items, this);
         historyList.setAdapter(adapter);
@@ -78,27 +74,16 @@ public class HistoryActivity extends AppCompatActivity {
             Toast.makeText(this, "Please sign in to view your history", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Show progress bar and hide empty view
-        progressBar.setVisibility(View.VISIBLE);
-        emptyView.setVisibility(View.GONE);
-        historyList.setVisibility(View.GONE);
-
         supabaseAuth.getPlantObservations(new SupabaseAuth.DataListCallback() {
             @Override
             public void onSuccess(JsonArray data) {
                 runOnUiThread(() -> {
-                    // Clear existing items
                     items.clear();
-                    
-                    // Parse the data and add to items list
                     for (int i = 0; i < data.size(); i++) {
                         JsonObject observation = data.get(i).getAsJsonObject();
                         HistoryItem item = new HistoryItem(observation);
                         items.add(item);
                     }
-                    
-                    // Sort items by date (newest first)
                     Collections.sort(items, new Comparator<HistoryItem>() {
                         @Override
                         public int compare(HistoryItem o1, HistoryItem o2) {
@@ -106,28 +91,15 @@ public class HistoryActivity extends AppCompatActivity {
                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault());
                                 Date date1 = sdf.parse(o1.date);
                                 Date date2 = sdf.parse(o2.date);
-                                return date2.compareTo(date1); // Descending order (newest first)
+                                return date2.compareTo(date1);
                             } catch (ParseException e) {
                                 Log.e(TAG, "Error parsing date", e);
                                 return 0;
                             }
                         }
                     });
-                    
-                    // Update adapter
                     adapter.notifyDataSetChanged();
-                    
-                    // Hide progress bar
-                    progressBar.setVisibility(View.GONE);
-                    
-                    // Show empty view if no items
-                    if (items.isEmpty()) {
-                        emptyView.setVisibility(View.VISIBLE);
-                        historyList.setVisibility(View.GONE);
-                    } else {
-                        emptyView.setVisibility(View.GONE);
-                        historyList.setVisibility(View.VISIBLE);
-                    }
+
                 });
             }
 
@@ -136,9 +108,6 @@ public class HistoryActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Log.e(TAG, "Error loading history: " + error);
                     Toast.makeText(HistoryActivity.this, "Error loading history: " + error, Toast.LENGTH_SHORT).show();
-                    progressBar.setVisibility(View.GONE);
-                    emptyView.setVisibility(View.VISIBLE);
-                    historyList.setVisibility(View.GONE);
                 });
             }
         });

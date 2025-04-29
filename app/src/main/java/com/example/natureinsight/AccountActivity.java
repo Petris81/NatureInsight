@@ -16,10 +16,7 @@ public class AccountActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         
         supabaseAuth = SupabaseAuth.getInstance();
-        
-        // Check if user is authenticated
         if (!supabaseAuth.isAuthenticated()) {
-            // User is not authenticated, redirect to login
             Toast.makeText(this, "Please log in", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(AccountActivity.this, MainActivity.class);
             startActivity(intent);

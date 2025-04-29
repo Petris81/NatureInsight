@@ -24,26 +24,22 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Initialize SupabaseAuth
+        // init SupabaseAuth
         supabaseAuth = SupabaseAuth.getInstance();
         supabaseAuth.init(this);
         
-        // Initialize DatabaseManager
+        // init DatabaseManager
         databaseManager = DatabaseManager.getInstance();
         databaseManager.init(this);
-        
-        // Check if user is already logged in
+
         if (supabaseAuth.isAuthenticated()) {
-            // User is already logged in, navigate to AccountActivity
             Intent intent = new Intent(MainActivity.this, AccountActivity.class);
             startActivity(intent);
             finish();
             return;
         }
-        
         usernameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
-
         findViewById(R.id.login_button).setOnClickListener(v -> handleLogin());
         findViewById(R.id.signup_button).setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
@@ -63,10 +59,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Show loading state
         findViewById(R.id.login_button).setEnabled(false);
-
         supabaseAuth.signIn(email, password, new SupabaseAuth.AuthCallback() {
             @Override
             public void onSuccess(String token) {
@@ -93,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Close database connection when the activity is destroyed
+        // close databse when we close the app
         if (databaseManager != null) {
             databaseManager.close();
         }

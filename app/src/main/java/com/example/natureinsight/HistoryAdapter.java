@@ -39,11 +39,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
         HistoryItem item = items.get(position);
         holder.titleText.setText(item.title);
-        
-        // Format the date to be more readable
         String formattedDate = formatDate(item.date);
         holder.dateText.setText(formattedDate);
-
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, PlantInfoActivity.class);
             intent.putExtra("plant_name", item.title);
@@ -62,20 +59,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     public int getItemCount() {
         return items.size();
     }
-
-    /**
-     * Formats the ISO date string to a more readable format
-     */
     private String formatDate(String isoDate) {
         try {
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault());
             Date date = inputFormat.parse(isoDate);
-            
-            // Format the date to a more readable format
             SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
             return outputFormat.format(date);
         } catch (ParseException e) {
-            // If parsing fails, return the original string
             return isoDate;
         }
     }

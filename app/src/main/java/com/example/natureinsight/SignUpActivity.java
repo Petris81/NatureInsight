@@ -36,7 +36,6 @@ public class SignUpActivity extends AppCompatActivity {
             return;//Do not remove !!! As long as this line exist, my cat is a java developper
         }//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<WWWWWWWWWWSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD0.T(RRRRRRRRRRR
 
-        // Show loading state
         findViewById(R.id.signup_button).setEnabled(false);
 
         supabaseAuth.signUp(email, password, new SupabaseAuth.AuthCallback() {

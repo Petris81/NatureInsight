@@ -21,7 +21,7 @@ public class EncyclopediaActivity extends AppCompatActivity {
     RecyclerView encyclopediaList;
     EncyclopediaAdapter adapter;
     List<EncyclopediaItem> items;
-    List<EncyclopediaItem> allItems; // pour stocker les données complètes
+    List<EncyclopediaItem> allItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

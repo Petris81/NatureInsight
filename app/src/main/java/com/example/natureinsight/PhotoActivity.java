@@ -39,8 +39,8 @@ public class PhotoActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private Location currentLocation;
     private int altitudeOfObservation = 0;
-    private int confidenceInIdentification = 80; // Default value
-    private String plantName = "Inconnu"; // Default value
+    private int confidenceInIdentification = 0; // valeur par défault
+    private String plantName = "Inconnu"; // valeur par défaut
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,15 +120,14 @@ public class PhotoActivity extends AppCompatActivity {
             Bitmap photo = (Bitmap) data.getExtras().get("data");
             String currentDate = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(new Date());
 
-            // Generate a unique filename for the image
+            // get a uuid for each image
             String fileName = UUID.randomUUID().toString() + ".jpg";
-            
-            // Convert bitmap to byte array
+
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             photo.compress(Bitmap.CompressFormat.JPEG, 90, stream);
             byte[] imageData = stream.toByteArray();
 
-            // Identify the plant
+            //identify
             identifyPlant(photo, imageData, fileName, currentDate);
         } else {
             finish();
@@ -139,35 +138,26 @@ public class PhotoActivity extends AppCompatActivity {
         plantIdentificationService.identifyPlant(photo, new PlantIdentificationService.PlantIdentificationCallback() {
             @Override
             public void onSuccess(PlantIdentificationService.PlantIdentificationResult result) {
-                // Update plant information
                 plantName = result.getCommonName();
                 confidenceInIdentification = (int) result.getConfidence();
-                
                 Log.d("PhotoActivity", "Plant identified: " + plantName + " with confidence: " + confidenceInIdentification + "%");
-                
-                // Upload the image to Supabase
                 uploadImageToSupabase(imageData, fileName, photo, currentDate);
             }
 
             @Override
             public void onError(String error) {
                 Log.e("PhotoActivity", "Plant identification error: " + error);
-                // Continue with default values
                 uploadImageToSupabase(imageData, fileName, photo, currentDate);
             }
         });
     }
     
     private void uploadImageToSupabase(byte[] imageData, String fileName, Bitmap photo, String currentDate) {
-        // Upload the image to Supabase storage
         supabaseAuth.uploadImage(imageData, fileName, new SupabaseAuth.FileUploadCallback() {
             @Override
             public void onSuccess(String fileUrl) {
-                // Get location data
                 double latitude = currentLocation != null ? currentLocation.getLatitude() : 0.0;
                 double longitude = currentLocation != null ? currentLocation.getLongitude() : 0.0;
-
-                // Insert the observation into Supabase with the image URL
                 supabaseAuth.insertPlantObservation(
                     plantName,
                     latitude,
@@ -181,8 +171,6 @@ public class PhotoActivity extends AppCompatActivity {
                             runOnUiThread(() -> {
                                 Toast.makeText(PhotoActivity.this, 
                                     "Observation enregistrée avec succès!", Toast.LENGTH_SHORT).show();
-                                
-                                // Continue to PlantInfoActivity with the photo
                                 Intent intent = new Intent(PhotoActivity.this, PlantInfoActivity.class);
                                 intent.putExtra("photo_bitmap", photo);
                                 intent.putExtra("plant_name", plantName);
@@ -201,8 +189,6 @@ public class PhotoActivity extends AppCompatActivity {
                             runOnUiThread(() -> {
                                 Toast.makeText(PhotoActivity.this, 
                                     "Erreur lors de l'enregistrement: " + error, Toast.LENGTH_SHORT).show();
-                                
-                                // Still continue to PlantInfoActivity even if Supabase insertion failed
                                 Intent intent = new Intent(PhotoActivity.this, PlantInfoActivity.class);
                                 intent.putExtra("photo_bitmap", photo);
                                 intent.putExtra("plant_name", plantName);
@@ -224,8 +210,6 @@ public class PhotoActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(PhotoActivity.this, 
                         "Erreur lors du téléchargement de l'image: " + error, Toast.LENGTH_SHORT).show();
-                    
-                    // Continue to PlantInfoActivity even if image upload failed
                     Intent intent = new Intent(PhotoActivity.this, PlantInfoActivity.class);
                     intent.putExtra("photo_bitmap", photo);
                     intent.putExtra("plant_name", plantName);
