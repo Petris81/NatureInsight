@@ -41,7 +41,7 @@ public class PhotoActivity extends AppCompatActivity {
     private int altitudeOfObservation = 0;
     private int confidenceInIdentification = 0; // valeur par défault
     private String plantName = "Inconnu"; // valeur par défaut
-
+    private String scientificName = "Inconnu"; // valeur par défaut
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,6 +139,7 @@ public class PhotoActivity extends AppCompatActivity {
             @Override
             public void onSuccess(PlantIdentificationService.PlantIdentificationResult result) {
                 plantName = result.getCommonName();
+                scientificName = result.getScientificName();
                 confidenceInIdentification = (int) result.getConfidence();
                 Log.d("PhotoActivity", "Plant identified: " + plantName + " with confidence: " + confidenceInIdentification + "%");
                 uploadImageToSupabase(imageData, fileName, photo, currentDate);
@@ -165,6 +166,7 @@ public class PhotoActivity extends AppCompatActivity {
                     confidenceInIdentification,
                     altitudeOfObservation,
                     fileUrl,
+                    scientificName,
                     new SupabaseAuth.PlantObservationCallback() {
                         @Override
                         public void onSuccess(JsonObject data) {
@@ -179,6 +181,7 @@ public class PhotoActivity extends AppCompatActivity {
                                 intent.putExtra("plant_longitude", String.valueOf(longitude));
                                 intent.putExtra("plant_confidence", String.valueOf(confidenceInIdentification));
                                 intent.putExtra("plant_altitude", String.valueOf(altitudeOfObservation));
+                                intent.putExtra("scientific_name", String.valueOf(scientificName));
                                 startActivity(intent);
                                 finish();
                             });

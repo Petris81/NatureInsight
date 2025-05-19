@@ -36,11 +36,13 @@ public class SupabaseAuth {
     private static final String KEY_AUTH_TOKEN = "auth_token";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_EMAIL = "user_email";
+    private static final String KEY_REFRESH_TOKEN = "refresh_token";
 
     private static SupabaseAuth instance;
     private String currentUserToken;
     private String currentUserId;
     private String currentUserEmail;
+    private String refreshToken;
     private Context appContext;
 
     private SupabaseAuth() {}
@@ -63,6 +65,7 @@ public class SupabaseAuth {
         currentUserToken = prefs.getString(KEY_AUTH_TOKEN, null);
         currentUserId = prefs.getString(KEY_USER_ID, null);
         currentUserEmail = prefs.getString(KEY_USER_EMAIL, null);
+        refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null);
         
         Log.d(TAG, "Loaded stored credentials: " + (currentUserToken != null ? "Token exists" : "No token"));
     }
@@ -77,10 +80,12 @@ public class SupabaseAuth {
             editor.putString(KEY_AUTH_TOKEN, currentUserToken);
             editor.putString(KEY_USER_ID, currentUserId);
             editor.putString(KEY_USER_EMAIL, currentUserEmail);
+            editor.putString(KEY_REFRESH_TOKEN, refreshToken);
         } else {
             editor.remove(KEY_AUTH_TOKEN);
             editor.remove(KEY_USER_ID);
             editor.remove(KEY_USER_EMAIL);
+            editor.remove(KEY_REFRESH_TOKEN);
         }
         
         editor.apply();
@@ -148,6 +153,7 @@ public class SupabaseAuth {
         currentUserToken = null;
         currentUserId = null;
         currentUserEmail = null;
+        refreshToken = null;
         saveCredentials();
     }
     public boolean isAuthenticated() {
@@ -233,6 +239,7 @@ public class SupabaseAuth {
             int confidenceInIdentification,
             int altitudeOfObservation,
             String pictureOfObservation,
+            String scientificName,
             PlantObservationCallback callback) {
         
         if (!isAuthenticated()) {
@@ -243,6 +250,7 @@ public class SupabaseAuth {
         JsonObject observation = new JsonObject();
         observation.addProperty("userid", currentUserId);
         observation.addProperty("plantname", plantName);
+        observation.addProperty("scientificname", scientificName);
         observation.addProperty("observationdatetime", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         observation.addProperty("latitude", String.valueOf(latitude));
         observation.addProperty("longitude", String.valueOf(longitude));
@@ -377,6 +385,7 @@ public class SupabaseAuth {
                     JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                     currentUserToken = jsonResponse.get("access_token").getAsString();
                     currentUserId = jsonResponse.get("user").getAsJsonObject().get("id").getAsString();
+                    refreshToken = jsonResponse.get("refresh_token").getAsString();
                     saveCredentials();
                     
                     callback.onSuccess(currentUserToken);
@@ -390,11 +399,52 @@ public class SupabaseAuth {
             }
         }).start();
     }
+    private void refreshToken(AuthCallback callback) {
+        if (refreshToken == null) {
+            callback.onError("No refresh token available");
+            return;
+        }
+
+        JsonObject jsonBody = new JsonObject();
+        jsonBody.addProperty("refresh_token", refreshToken);
+
+        RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Content-Type", "application/json")
+                .post(body)
+                .build();
+
+        executeAuthRequest(request, callback);
+    }
     private void executeDataRequest(Request request, DataCallback callback) {
         new Thread(() -> {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "Unknown error";
+                    
+                    // Check if token is expired
+                    if (response.code() == 401 && errorBody.contains("JWT expired")) {
+                        // Try to refresh the token
+                        refreshToken(new AuthCallback() {
+                            @Override
+                            public void onSuccess(String token) {
+                                // Retry the original request with new token
+                                Request newRequest = request.newBuilder()
+                                        .header("Authorization", "Bearer " + token)
+                                        .build();
+                                executeDataRequest(newRequest, callback);
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                callback.onError("Token refresh failed: " + error);
+                            }
+                        });
+                        return;
+                    }
+                    
                     Log.e(TAG, "Request failed: " + errorBody);
                     callback.onError(errorBody);
                     return;
@@ -431,6 +481,28 @@ public class SupabaseAuth {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "Unknown error";
+                    
+                    // Check if token is expired
+                    if (response.code() == 401 && errorBody.contains("JWT expired")) {
+                        // Try to refresh the token
+                        refreshToken(new AuthCallback() {
+                            @Override
+                            public void onSuccess(String token) {
+                                // Retry the original request with new token
+                                Request newRequest = request.newBuilder()
+                                        .header("Authorization", "Bearer " + token)
+                                        .build();
+                                executeDataListRequest(newRequest, callback);
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                callback.onError("Token refresh failed: " + error);
+                            }
+                        });
+                        return;
+                    }
+                    
                     Log.e(TAG, "Request failed: " + errorBody);
                     callback.onError(errorBody);
                     return;

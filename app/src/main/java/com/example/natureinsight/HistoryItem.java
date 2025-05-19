@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 
 public class HistoryItem {
     public String title;
+    public String scientificName;
     public String date;
     public String pictureUrl;
     public double latitude;

@@ -21,7 +21,8 @@
                 android:layout_height="wrap_content"
                 android:background="#35CA00"
                 android:padding="12dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:radius="10dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -78,20 +79,36 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/ni_fixation"
                     android:text="@string/ni_fixation" />
+                <com.example.natureinsight.GradientValueView
+                    android:id="@+id/ni_fixation_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/sol_structure"
-                    android:text="@string/sol_structure"
-                    android:layout_marginTop="8dp" />
+                    android:text="@string/sol_structure" />
+                <com.example.natureinsight.GradientValueView
+                    android:id="@+id/sol_structure_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/water_retention"
-                    android:text="@string/water_retention"
-                    android:layout_marginTop="8dp" />
+                    android:text="@string/water_retention" />
+                <com.example.natureinsight.GradientValueView
+                    android:id="@+id/water_retention_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp" />
             </LinearLayout>
 
             <TextView
@@ -107,31 +124,36 @@
                 android:padding="12dp"
                 android:orientation="vertical"
                 android:background="#35CA00"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:radius="10dp">
 
                 <TextView
                     android:id="@+id/observation_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/observation_date" />
+                    android:text="@string/observation_date"
+                    android:textColor="#494A25" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:id="@+id/position"
-                    android:text="@string/position" />
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/position"
+                    android:textColor="#494A25" />
+
+                <TextView
                     android:id="@+id/confidence"
-                    android:text="@string/confidence" />
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/confidence"
+                    android:textColor="#494A25" />
+
+                <TextView
                     android:id="@+id/altitude"
-                    android:text="@string/altitude" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/altitude"
+                    android:textColor="#494A25" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

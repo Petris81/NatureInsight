@@ -2,6 +2,7 @@ package com.example.natureinsight;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import java.util.Locale;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -84,6 +85,7 @@ public class PlantIdentificationService {
                 .addFormDataPart("images", "plant.jpg",
                         RequestBody.create(MEDIA_TYPE_JPEG, imageBytes))
                 .addFormDataPart("organs", "auto")
+                .addFormDataPart("lang", Locale.getDefault().getLanguage())
                 .build();
         Request request = new Request.Builder()
                 .url(API_URL + "?include-related-images=false&no-reject=false&nb-results=10&lang=en&api-key=" + API_KEY)
