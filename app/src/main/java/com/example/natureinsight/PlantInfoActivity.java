@@ -2,6 +2,7 @@ package com.example.natureinsight;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
@@ -56,7 +57,7 @@ public class PlantInfoActivity extends AppCompatActivity {
         scientificNameText.setText(scientificName != null ? scientificName : "");
         updateEcosystemServices(scientificName);
         dateText.setText(getString(R.string.observation_date) + " " + plantDate);
-        positionText.setText(positionText.getText()+" Lat:" + plantLatitude + ", Long:" + plantLongitude);
+        positionText.setText(getString(R.string.position) + " " + getString(R.string.latitude) + plantLatitude + ", " + getString(R.string.longitude) + plantLongitude);
         altitudeText.setText(getString(R.string.altitude) + " " + getIntent().getStringExtra("plant_altitude"));
         confidenceText.setText(getString(R.string.confidence) + " " + plantConfidence);
         Bitmap photo = getIntent().getParcelableExtra("photo_bitmap");
@@ -93,7 +94,7 @@ public class PlantInfoActivity extends AppCompatActivity {
                             Log.e(TAG, "Failed to get signed URL: " + error);
                             runOnUiThread(() -> {
                                 Toast.makeText(PlantInfoActivity.this, 
-                                    "Failed to load image", Toast.LENGTH_SHORT).show();
+                                    getString(R.string.error_loading_image), Toast.LENGTH_SHORT).show();
                             });
                         }
                     });
@@ -107,6 +108,12 @@ public class PlantInfoActivity extends AppCompatActivity {
                 }
             }
         }
+        findViewById(R.id.learn_more_button).setOnClickListener(v -> {
+            String searchQuery = Uri.encode(plantName);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=" + searchQuery));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
         findViewById(R.id.nav_encyclopedia).setOnClickListener(v ->
                 startActivity(new Intent(this, EncyclopediaActivity.class)));
 

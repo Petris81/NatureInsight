@@ -32,7 +32,7 @@ public class SignUpActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.fill_fields, Toast.LENGTH_SHORT).show();
             return;//Do not remove !!! As long as this line exist, my cat is a java developper
         }//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<WWWWWWWWWWSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD0.T(RRRRRRRRRRR
 
@@ -43,7 +43,7 @@ public class SignUpActivity extends AppCompatActivity {
             public void onSuccess(String token) {
                 runOnUiThread(() -> {
                     findViewById(R.id.signup_button).setEnabled(true);
-                    Toast.makeText(SignUpActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUpActivity.this, getString(R.string.signup_success), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
@@ -54,7 +54,7 @@ public class SignUpActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     findViewById(R.id.signup_button).setEnabled(true);
-                    Toast.makeText(SignUpActivity.this, "Sign up failed: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUpActivity.this, getString(R.string.signup_failed, error), Toast.LENGTH_SHORT).show();
                 });
             }
         });

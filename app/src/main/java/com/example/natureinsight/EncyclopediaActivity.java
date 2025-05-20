@@ -14,7 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class EncyclopediaActivity extends AppCompatActivity {
 
@@ -22,21 +24,32 @@ public class EncyclopediaActivity extends AppCompatActivity {
     EncyclopediaAdapter adapter;
     List<EncyclopediaItem> items;
     List<EncyclopediaItem> allItems;
+    private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_encyclopedia);
 
+        // Initialize DatabaseManager
+        databaseManager = DatabaseManager.getInstance();
+        databaseManager.init(this);
+
         encyclopediaList = findViewById(R.id.encyclopedia_list);
         encyclopediaList.setLayoutManager(new LinearLayoutManager(this));
 
-        // Données fictives
+        // Get unique species from database
+        Set<String> uniqueSpecies = new HashSet<>();
+        List<EcosystemService> services = databaseManager.queryEcosystemServices(null, null);
+        for (EcosystemService service : services) {
+            uniqueSpecies.add(service.getSpecies());
+        }
+
+        // Convert to EncyclopediaItems
         allItems = new ArrayList<>();
-        allItems.add(new EncyclopediaItem("Chêne pédonculé", "Arbre majestueux des forêts d'Europe."));
-        allItems.add(new EncyclopediaItem("Pissenlit", "Plante vivace aux fleurs jaunes, connue pour ses graines volantes."));
-        allItems.add(new EncyclopediaItem("Fougère aigle", "Grande fougère fréquente dans les sous-bois."));
-        allItems.add(new EncyclopediaItem("Trèfle blanc", "Plante herbacée des prairies, souvent porte-bonheur."));
+        for (String species : uniqueSpecies) {
+            allItems.add(new EncyclopediaItem(species, ""));
+        }
 
         items = new ArrayList<>(allItems);
         adapter = new EncyclopediaAdapter(items);
@@ -67,6 +80,7 @@ public class EncyclopediaActivity extends AppCompatActivity {
             adapter = new EncyclopediaAdapter(items);
             encyclopediaList.setAdapter(adapter);
         });
+
         findViewById(R.id.nav_encyclopedia).setOnClickListener(v ->
                 startActivity(new Intent(this, EncyclopediaActivity.class)));
 
@@ -78,6 +92,13 @@ public class EncyclopediaActivity extends AppCompatActivity {
 
         findViewById(R.id.nav_account).setOnClickListener(v ->
                 startActivity(new Intent(this, AccountActivity.class)));
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
     }
 }

@@ -1,5 +1,8 @@
 package com.example.natureinsight;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +15,7 @@ import java.util.List;
 public class EncyclopediaAdapter extends RecyclerView.Adapter<EncyclopediaAdapter.EncyclopediaViewHolder> {
 
     private List<EncyclopediaItem> items;
+    private Context context;
 
     public EncyclopediaAdapter(List<EncyclopediaItem> items) {
         this.items = items;
@@ -19,7 +23,8 @@ public class EncyclopediaAdapter extends RecyclerView.Adapter<EncyclopediaAdapte
 
     @Override
     public EncyclopediaViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_encyclopedia, parent, false);
+        context = parent.getContext();
+        View view = LayoutInflater.from(context).inflate(R.layout.item_encyclopedia, parent, false);
         return new EncyclopediaViewHolder(view);
     }
 
@@ -28,6 +33,18 @@ public class EncyclopediaAdapter extends RecyclerView.Adapter<EncyclopediaAdapte
         EncyclopediaItem item = items.get(position);
         holder.nameTextView.setText(item.name);
         holder.descriptionTextView.setText(item.description);
+        
+        // Make the entire item clickable
+        holder.itemView.setOnClickListener(v -> {
+            String searchQuery = Uri.encode(item.name);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=" + searchQuery));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        });
+        
+        // Add visual feedback
+        holder.itemView.setClickable(true);
+        holder.itemView.setFocusable(true);
     }
 
     @Override

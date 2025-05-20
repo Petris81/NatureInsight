@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.fill_fields), Toast.LENGTH_SHORT).show();
             return;
         }
         findViewById(R.id.login_button).setEnabled(false);
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(String token) {
                 runOnUiThread(() -> {
                     findViewById(R.id.login_button).setEnabled(true);
-                    Toast.makeText(MainActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.login_success), Toast.LENGTH_SHORT).show();
                     supabaseAuth.setCurrentUserEmail(email);
                     Intent intent = new Intent(MainActivity.this, AccountActivity.class);
                     startActivity(intent);
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     findViewById(R.id.login_button).setEnabled(true);
-                    Toast.makeText(MainActivity.this, "Login failed: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.login_failed, error), Toast.LENGTH_SHORT).show();
                 });
             }
         });

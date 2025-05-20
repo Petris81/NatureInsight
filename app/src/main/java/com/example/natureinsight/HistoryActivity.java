@@ -71,7 +71,10 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void loadHistoryFromSupabase() {
         if (!supabaseAuth.isAuthenticated()) {
-            Toast.makeText(this, "Please sign in to view your history", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.sign_in_history), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
             return;
         }
         supabaseAuth.getPlantObservations(new SupabaseAuth.DataListCallback() {
@@ -99,7 +102,6 @@ public class HistoryActivity extends AppCompatActivity {
                         }
                     });
                     adapter.notifyDataSetChanged();
-
                 });
             }
 
@@ -107,7 +109,14 @@ public class HistoryActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     Log.e(TAG, "Error loading history: " + error);
-                    Toast.makeText(HistoryActivity.this, "Error loading history: " + error, Toast.LENGTH_SHORT).show();
+                    if (error.contains("Session expired")) {
+                        Toast.makeText(HistoryActivity.this, getString(R.string.session_expired), Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(HistoryActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(HistoryActivity.this, getString(R.string.error_loading_history, error), Toast.LENGTH_SHORT).show();
+                    }
                 });
             }
         });

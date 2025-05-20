@@ -385,8 +385,17 @@ public class SupabaseAuth {
                     JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                     currentUserToken = jsonResponse.get("access_token").getAsString();
                     currentUserId = jsonResponse.get("user").getAsJsonObject().get("id").getAsString();
-                    refreshToken = jsonResponse.get("refresh_token").getAsString();
+                    
+                    if (jsonResponse.has("refresh_token")) {
+                        refreshToken = jsonResponse.get("refresh_token").getAsString();
+                        Log.d(TAG, "Refresh token saved successfully");
+                    } else {
+                        Log.e(TAG, "No refresh token in response");
+                    }
+                    
                     saveCredentials();
+                    Log.d(TAG, "Credentials saved: " + (currentUserToken != null ? "Token exists" : "No token") + 
+                          ", Refresh token: " + (refreshToken != null ? "exists" : "missing"));
                     
                     callback.onSuccess(currentUserToken);
                 } else {
@@ -401,7 +410,14 @@ public class SupabaseAuth {
     }
     private void refreshToken(AuthCallback callback) {
         if (refreshToken == null) {
-            callback.onError("No refresh token available");
+            Log.e(TAG, "No refresh token available need to re-authenticate");
+            // Clear all credentials since we can't refresh
+            currentUserToken = null;
+            currentUserId = null;
+            currentUserEmail = null;
+            refreshToken = null;
+            saveCredentials();
+            callback.onError("Session expired.");
             return;
         }
 

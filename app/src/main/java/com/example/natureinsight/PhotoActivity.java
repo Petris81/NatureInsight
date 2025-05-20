@@ -40,8 +40,8 @@ public class PhotoActivity extends AppCompatActivity {
     private Location currentLocation;
     private int altitudeOfObservation = 0;
     private int confidenceInIdentification = 0; // valeur par défault
-    private String plantName = "Inconnu"; // valeur par défaut
-    private String scientificName = "Inconnu"; // valeur par défaut
+    private String plantName; // valeur par défaut
+    private String scientificName; // valeur par défaut
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +49,10 @@ public class PhotoActivity extends AppCompatActivity {
         supabaseAuth = SupabaseAuth.getInstance();
         plantIdentificationService = new PlantIdentificationService();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Initialize default strings
+        plantName = getString(R.string.unknown);
+        scientificName = getString(R.string.unknown);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -105,7 +109,7 @@ public class PhotoActivity extends AppCompatActivity {
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             getCurrentLocation();
         } else {
-            Toast.makeText(this, "Permission refusée", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show();
             if (requestCode == REQUEST_CAMERA_PERMISSION) {
                 finish();
             }
@@ -172,7 +176,7 @@ public class PhotoActivity extends AppCompatActivity {
                         public void onSuccess(JsonObject data) {
                             runOnUiThread(() -> {
                                 Toast.makeText(PhotoActivity.this, 
-                                    "Observation enregistrée avec succès!", Toast.LENGTH_SHORT).show();
+                                    getString(R.string.observation_saved), Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(PhotoActivity.this, PlantInfoActivity.class);
                                 intent.putExtra("photo_bitmap", photo);
                                 intent.putExtra("plant_name", plantName);
@@ -191,7 +195,7 @@ public class PhotoActivity extends AppCompatActivity {
                         public void onError(String error) {
                             runOnUiThread(() -> {
                                 Toast.makeText(PhotoActivity.this, 
-                                    "Erreur lors de l'enregistrement: " + error, Toast.LENGTH_SHORT).show();
+                                    getString(R.string.error_saving, error), Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(PhotoActivity.this, PlantInfoActivity.class);
                                 intent.putExtra("photo_bitmap", photo);
                                 intent.putExtra("plant_name", plantName);
@@ -212,7 +216,7 @@ public class PhotoActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     Toast.makeText(PhotoActivity.this, 
-                        "Erreur lors du téléchargement de l'image: " + error, Toast.LENGTH_SHORT).show();
+                        getString(R.string.error_uploading, error), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(PhotoActivity.this, PlantInfoActivity.class);
                     intent.putExtra("photo_bitmap", photo);
                     intent.putExtra("plant_name", plantName);

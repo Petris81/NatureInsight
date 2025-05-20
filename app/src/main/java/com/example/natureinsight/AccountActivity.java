@@ -17,7 +17,7 @@ public class AccountActivity extends AppCompatActivity {
         
         supabaseAuth = SupabaseAuth.getInstance();
         if (!supabaseAuth.isAuthenticated()) {
-            Toast.makeText(this, "Please log in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(AccountActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
@@ -30,7 +30,7 @@ public class AccountActivity extends AppCompatActivity {
         
         findViewById(R.id.logout_button).setOnClickListener(v -> {
             supabaseAuth.signOut();
-            Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.logged_out_success), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(AccountActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
