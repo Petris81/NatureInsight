@@ -85,10 +85,12 @@ public class PlantIdentificationService {
                 .addFormDataPart("images", "plant.jpg",
                         RequestBody.create(MEDIA_TYPE_JPEG, imageBytes))
                 .addFormDataPart("organs", "auto")
-                .addFormDataPart("lang", Locale.getDefault().getLanguage())
                 .build();
+
+        //.addFormDataPart("lang", Locale.getDefault().getLanguage())
+        String lang = Locale.getDefault().getLanguage();
         Request request = new Request.Builder()
-                .url(API_URL + "?include-related-images=false&no-reject=false&nb-results=10&lang=en&api-key=" + API_KEY)
+                .url(API_URL + "?include-related-images=false&no-reject=false&nb-results=10&lang="+lang+"&api-key=" + API_KEY)
                 .addHeader("accept", "application/json")
                 .addHeader("Content-Type", "multipart/form-data")
                 .post(requestBody)
