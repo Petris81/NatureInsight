@@ -155,7 +155,53 @@
                     android:text="@string/altitude"
                     android:textColor="#494A25" />
             </LinearLayout>
+            <TextView
+                android:id="@+id/comment_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Commentaire :"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/existing_comment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:background="#DDFFDD"
+                android:textColor="#000"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/comment_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Écrivez votre commentaire ici..."
+                android:visibility="gone"
+                android:background="#FFFFFF"
+                android:layout_marginTop="8dp"
+                android:padding="8dp" />
+
+            <Button
+                android:id="@+id/save_comment_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Valider"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:backgroundTint="#228100"
+                android:visibility="gone" />
+            <Button
+                android:id="@+id/add_comment_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ajouter un commentaire"
+                android:layout_gravity="bottom|center_horizontal"
+                android:backgroundTint="#228100"
+                android:layout_marginTop="16dp" />
         </LinearLayout>
+
     </ScrollView>
     <Button
         android:id="@+id/learn_more_button"
@@ -166,6 +212,7 @@
         android:layout_marginBottom="70dp"
         android:backgroundTint="#228100"
         android:textColor="#FFFFFF" />
+
     <include
     layout="@layout/bottom_nav"
     android:layout_gravity="bottom"

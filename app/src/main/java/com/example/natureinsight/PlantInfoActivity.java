@@ -5,6 +5,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,18 +16,26 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.natureinsight.SupabaseAuth.DataCallback;
+import com.google.gson.JsonObject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PlantInfoActivity extends AppCompatActivity {
 
     private static final String TAG = "PlantInfoActivity";
     private static final String SUPABASE_URL = "https://pnwcnyojlyuzvzfzcmtm.supabase.co";
-    private TextView plantNameText, dateText, positionText, altitudeText, confidenceText, scientificNameText;
+    private TextView plantNameText, dateText, positionText, altitudeText, confidenceText, scientificNameText, existingComment, commentLabel;
     private ImageView imageView;
     private SupabaseAuth supabaseAuth;
     private DatabaseManager databaseManager;
     private GradientValueView niFixationValue, solStructureValue, waterRetentionValue;
+
+    private EditText commentInput;
+    private Button saveCommentButton, addCommentButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +56,11 @@ public class PlantInfoActivity extends AppCompatActivity {
         niFixationValue = findViewById(R.id.ni_fixation_value);
         solStructureValue = findViewById(R.id.sol_structure_value);
         waterRetentionValue = findViewById(R.id.water_retention_value);
+        commentInput = findViewById(R.id.comment_input);
+        saveCommentButton = findViewById(R.id.save_comment_button);
+        addCommentButton = findViewById(R.id.add_comment_button);
+        existingComment = findViewById(R.id.existing_comment);
+        commentLabel = findViewById(R.id.comment_label);
 
         String plantName = getIntent().getStringExtra("plant_name");
         String plantDate = getIntent().getStringExtra("plant_date");
@@ -108,6 +124,30 @@ public class PlantInfoActivity extends AppCompatActivity {
                 }
             }
         }
+        JsonObject updateData = new JsonObject();
+        updateData.addProperty("noteutilisateur", commentInput.getText().toString());
+        Map<String, Object> primaryKey = new HashMap<>();
+        primaryKey.put("userid", supabaseAuth.getCurrentUserId());
+        primaryKey.put("plantname", getIntent().getStringExtra("plant_name"));
+        primaryKey.put("observationdatetime", getIntent().getStringExtra("observation_datetime"));
+        findViewById(R.id.add_comment_button).setOnClickListener(v -> {
+            commentInput.setVisibility(View.VISIBLE);
+            saveCommentButton.setVisibility(View.VISIBLE);
+            addCommentButton.setVisibility(View.GONE);
+        });
+        findViewById(R.id.save_comment_button).setOnClickListener(v -> {
+            supabaseAuth.update("plant_observations", primaryKey.toString(), updateData, new DataCallback() {
+                @Override
+                public void onSuccess(JsonObject data) {
+                    Toast.makeText(PlantInfoActivity.this, "sauvegarde réussie", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(PlantInfoActivity.this, "erreur lors de la sauvegarde du commentaire", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
         findViewById(R.id.learn_more_button).setOnClickListener(v -> {
             String searchQuery = Uri.encode(plantName);
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=" + searchQuery));

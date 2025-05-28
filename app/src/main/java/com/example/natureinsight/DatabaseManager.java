@@ -174,4 +174,5 @@ public class DatabaseManager {
             dbHelper.close();
         }
     }
+
 } 
