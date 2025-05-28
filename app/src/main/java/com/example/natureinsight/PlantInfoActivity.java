@@ -64,17 +64,19 @@ public class PlantInfoActivity extends AppCompatActivity {
 
         String plantName = getIntent().getStringExtra("plant_name");
         String plantDate = getIntent().getStringExtra("plant_date");
+        String plantDateUnformated = getIntent().getStringExtra("plant_date_unformated");
         String plantLatitude = getIntent().getStringExtra("plant_latitude");
         String plantLongitude = getIntent().getStringExtra("plant_longitude");
         String plantConfidence = getIntent().getStringExtra("plant_confidence");
         String scientificName = getIntent().getStringExtra("scientific_name");
+        Integer plantAltitude = getIntent().getIntExtra("plant_altitude", 0);
 
         plantNameText.setText(plantName);
         scientificNameText.setText(scientificName != null ? scientificName : "");
         updateEcosystemServices(scientificName);
         dateText.setText(getString(R.string.observation_date) + " " + plantDate);
         positionText.setText(getString(R.string.position) + " " + getString(R.string.latitude) + plantLatitude + ", " + getString(R.string.longitude) + plantLongitude);
-        altitudeText.setText(getString(R.string.altitude) + " " + getIntent().getStringExtra("plant_altitude"));
+        altitudeText.setText(getString(R.string.altitude) + " " + plantAltitude);
         confidenceText.setText(getString(R.string.confidence) + " " + plantConfidence);
         Bitmap photo = getIntent().getParcelableExtra("photo_bitmap");
         if (photo != null) {
@@ -124,8 +126,6 @@ public class PlantInfoActivity extends AppCompatActivity {
                 }
             }
         }
-        JsonObject updateData = new JsonObject();
-        updateData.addProperty("noteutilisateur", commentInput.getText().toString());
         Map<String, Object> primaryKey = new HashMap<>();
         primaryKey.put("userid", supabaseAuth.getCurrentUserId());
         primaryKey.put("plantname", getIntent().getStringExtra("plant_name"));
@@ -136,15 +136,55 @@ public class PlantInfoActivity extends AppCompatActivity {
             addCommentButton.setVisibility(View.GONE);
         });
         findViewById(R.id.save_comment_button).setOnClickListener(v -> {
-            supabaseAuth.update("plant_observations", primaryKey.toString(), updateData, new DataCallback() {
+            if (plantDate == null) {
+                Toast.makeText(PlantInfoActivity.this, "Erreur: date d'observation manquante", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            JsonObject updateData = new JsonObject();
+            updateData.addProperty("noteutilisateur", commentInput.getText().toString());
+            
+            String timestamp = getIntent().getStringExtra("observation_datetime");
+            if (timestamp != null) {
+                timestamp = timestamp.replace("T", " ");
+            }
+            String encodedUserId = Uri.encode(supabaseAuth.getCurrentUserId());
+            String encodedPlantName = Uri.encode(plantName);
+            String encodedTimestamp = Uri.encode(timestamp);
+
+            String query = String.format("userid=eq.%s&plantname=eq.%s&observationdatetime=eq.%s",
+                encodedUserId,
+                encodedPlantName,
+                encodedTimestamp);
+            
+            Log.d(TAG, "Update query parameters:");
+            Log.d(TAG, "userid: " + encodedUserId);
+            Log.d(TAG, "plantname: " + encodedPlantName);
+            Log.d(TAG, "observationdatetime: " + encodedTimestamp);
+            Log.d(TAG, "noteutilisateur: " + commentInput.getText().toString());
+            Log.d(TAG, "Full update query: " + query);
+            Log.d(TAG, "Update data: " + updateData.toString());
+            
+            supabaseAuth.update("plant_observations", query, updateData, new DataCallback() {
                 @Override
                 public void onSuccess(JsonObject data) {
-                    Toast.makeText(PlantInfoActivity.this, "sauvegarde réussie", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Update response data: " + data.toString());
+                    runOnUiThread(() -> {
+                        Toast.makeText(PlantInfoActivity.this, "sauvegarde réussie", Toast.LENGTH_SHORT).show();
+                        commentInput.setVisibility(View.GONE);
+                        saveCommentButton.setVisibility(View.GONE);
+                        addCommentButton.setVisibility(View.VISIBLE);
+                        existingComment.setText(commentInput.getText().toString());
+                        commentLabel.setVisibility(View.VISIBLE);
+                    });
                 }
 
                 @Override
                 public void onError(String error) {
-                    Toast.makeText(PlantInfoActivity.this, "erreur lors de la sauvegarde du commentaire", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Update error: " + error);
+                    runOnUiThread(() -> {
+                        Toast.makeText(PlantInfoActivity.this, "erreur lors de la sauvegarde du commentaire: " + error, Toast.LENGTH_LONG).show();
+                    });
                 }
             });
         });
@@ -198,11 +238,8 @@ public class PlantInfoActivity extends AppCompatActivity {
         if (scientificName == null || scientificName.isEmpty()) {
             return;
         }
-
-        // Query the database for ecosystem services
         List<EcosystemService> services = databaseManager.queryEcosystemServices(null, scientificName);
         if (!services.isEmpty()) {
-            // Update UI with ecosystem service values
             for (EcosystemService service : services) {
                 switch (service.getService()) {
                     case "soil_structuration":

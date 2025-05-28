@@ -207,7 +207,7 @@ public class SupabaseAuth {
 
         RequestBody body = RequestBody.create(data.toString(), JSON);
         Request request = new Request.Builder()
-                .url(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id)
+                .url(SUPABASE_URL + "/rest/v1/" + table + "?" + id)
                 .addHeader("apikey", SUPABASE_KEY)
                 .addHeader("Authorization", "Bearer " + currentUserToken)
                 .addHeader("Content-Type", "application/json")
@@ -497,14 +497,10 @@ public class SupabaseAuth {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "Unknown error";
-                    
-                    // Check if token is expired
                     if (response.code() == 401 && errorBody.contains("JWT expired")) {
-                        // Try to refresh the token
                         refreshToken(new AuthCallback() {
                             @Override
                             public void onSuccess(String token) {
-                                // Retry the original request with new token
                                 Request newRequest = request.newBuilder()
                                         .header("Authorization", "Bearer " + token)
                                         .build();

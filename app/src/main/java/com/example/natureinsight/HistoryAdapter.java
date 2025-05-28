@@ -43,12 +43,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         holder.dateText.setText(formattedDate);
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, PlantInfoActivity.class);
+            intent.putExtra("observation_datetime", item.date.replace("T", " "));
             intent.putExtra("plant_name", item.title);
             intent.putExtra("plant_date", formattedDate);
             intent.putExtra("plant_image", item.pictureUrl);
-            intent.putExtra("plant_latitude", item.latitude);
-            intent.putExtra("plant_longitude", item.longitude);
-            intent.putExtra("plant_confidence", item.confidenceInIdentification);
+            intent.putExtra("plant_latitude", String.valueOf(item.latitude));
+            intent.putExtra("plant_longitude", String.valueOf(item.longitude));
+            intent.putExtra("plant_confidence", String.valueOf(item.confidenceInIdentification));
             intent.putExtra("plant_altitude", item.altitudeOfObservation);
             intent.putExtra("plant_id", item.id);
             context.startActivity(intent);
@@ -61,8 +62,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     }
     private String formatDate(String isoDate) {
         try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault());
-            Date date = inputFormat.parse(isoDate);
+            String cleanDate = isoDate.replace("T", " ");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
+            Date date = inputFormat.parse(cleanDate);
             SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
             return outputFormat.format(date);
         } catch (ParseException e) {
