@@ -30,22 +30,16 @@ public class EncyclopediaActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_encyclopedia);
-
-        // Initialize DatabaseManager
         databaseManager = DatabaseManager.getInstance();
         databaseManager.init(this);
 
         encyclopediaList = findViewById(R.id.encyclopedia_list);
         encyclopediaList.setLayoutManager(new LinearLayoutManager(this));
-
-        // Get unique species from database
         Set<String> uniqueSpecies = new HashSet<>();
         List<EcosystemService> services = databaseManager.queryEcosystemServices(null, null);
         for (EcosystemService service : services) {
             uniqueSpecies.add(service.getSpecies());
         }
-
-        // Convert to EncyclopediaItems
         allItems = new ArrayList<>();
         for (String species : uniqueSpecies) {
             allItems.add(new EncyclopediaItem(species, ""));

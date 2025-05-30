@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.natureinsight.SupabaseAuth.DataCallback;
+import com.example.natureinsight.SupabaseAuth.DataListCallback;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.HashMap;
@@ -146,44 +148,93 @@ public class PlantInfoActivity extends AppCompatActivity {
             
             String timestamp = getIntent().getStringExtra("observation_datetime");
             if (timestamp != null) {
-                timestamp = timestamp.replace("T", " ");
+                try {
+                    timestamp = timestamp.replaceAll("^\"|\"$", "");
+                    java.time.LocalDateTime dateTime = java.time.LocalDateTime.parse(timestamp);
+                    timestamp = dateTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
+                } catch (Exception e) {
+                    Log.e(TAG, "Error formatting timestamp: " + e.getMessage());
+                }
             }
             String encodedUserId = Uri.encode(supabaseAuth.getCurrentUserId());
             String encodedPlantName = Uri.encode(plantName);
-            String encodedTimestamp = Uri.encode(timestamp);
-
-            String query = String.format("userid=eq.%s&plantname=eq.%s&observationdatetime=eq.%s",
+            String encodedTimestamp = timestamp.toString();//Uri.encode(timestamp);
+            String selectQuery = String.format("userid=eq.%s&plantname=eq.%s&observationdatetime=eq.%s",
                 encodedUserId,
                 encodedPlantName,
                 encodedTimestamp);
+
+            Log.d(TAG, "Select query: " + selectQuery);
             
-            Log.d(TAG, "Update query parameters:");
-            Log.d(TAG, "userid: " + encodedUserId);
-            Log.d(TAG, "plantname: " + encodedPlantName);
-            Log.d(TAG, "observationdatetime: " + encodedTimestamp);
-            Log.d(TAG, "noteutilisateur: " + commentInput.getText().toString());
-            Log.d(TAG, "Full update query: " + query);
-            Log.d(TAG, "Update data: " + updateData.toString());
-            
-            supabaseAuth.update("plant_observations", query, updateData, new DataCallback() {
+            //irst we verify the record exist
+            supabaseAuth.select("plant_observations", selectQuery, new DataListCallback() {
                 @Override
-                public void onSuccess(JsonObject data) {
-                    Log.d(TAG, "Update response data: " + data.toString());
-                    runOnUiThread(() -> {
-                        Toast.makeText(PlantInfoActivity.this, "sauvegarde réussie", Toast.LENGTH_SHORT).show();
-                        commentInput.setVisibility(View.GONE);
-                        saveCommentButton.setVisibility(View.GONE);
-                        addCommentButton.setVisibility(View.VISIBLE);
-                        existingComment.setText(commentInput.getText().toString());
-                        commentLabel.setVisibility(View.VISIBLE);
-                    });
+                public void onSuccess(JsonArray data) {
+                    if (data != null && data.size() > 0) {
+                        String updateQuery = String.format("userid=eq.%s&plantname=eq.%s&observationdatetime=eq.%s",
+                            encodedUserId,
+                            encodedPlantName,
+                            encodedTimestamp);
+                        
+                        JsonObject updateData = new JsonObject();
+                        updateData.addProperty("noteutilisateur", commentInput.getText().toString());
+                        supabaseAuth.update("plant_observations", updateQuery, updateData, new DataCallback() {
+                            @Override
+                            public void onSuccess(JsonObject data) {
+                                supabaseAuth.select("plant_observations", selectQuery, new DataListCallback() {
+                                    @Override
+                                    public void onSuccess(JsonArray verifyData) {
+                                        runOnUiThread(() -> {
+                                            if (verifyData.size() > 0) {
+                                                JsonObject updatedRecord = verifyData.get(0).getAsJsonObject();
+                                                String updatedNote = null;
+                                                if (updatedRecord.has("noteutilisateur") && !updatedRecord.get("noteutilisateur").isJsonNull()) {
+                                                    updatedNote = updatedRecord.get("noteutilisateur").getAsString();
+                                                }
+                                                
+                                                if (updatedNote != null && updatedNote.equals(commentInput.getText().toString())) {
+                                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.save_success), Toast.LENGTH_SHORT).show();
+                                                    commentInput.setVisibility(View.GONE);
+                                                    saveCommentButton.setVisibility(View.GONE);
+                                                    addCommentButton.setVisibility(View.VISIBLE);
+                                                    existingComment.setText(commentInput.getText().toString());
+                                                    commentLabel.setVisibility(View.VISIBLE);
+                                                } else {
+                                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.update_failed), Toast.LENGTH_LONG).show();
+                                                }
+                                            } else {
+                                                Toast.makeText(PlantInfoActivity.this, getString(R.string.record_not_found_after_update), Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onError(String error) {
+                                        runOnUiThread(() -> {
+                                            Toast.makeText(PlantInfoActivity.this, getString(R.string.verification_error, error), Toast.LENGTH_LONG).show();
+                                        });
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.save_error, error), Toast.LENGTH_LONG).show();
+                                });
+                            }
+                        });
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(PlantInfoActivity.this, getString(R.string.record_not_found), Toast.LENGTH_LONG).show();
+                        });
+                    }
                 }
 
                 @Override
                 public void onError(String error) {
-                    Log.e(TAG, "Update error: " + error);
                     runOnUiThread(() -> {
-                        Toast.makeText(PlantInfoActivity.this, "erreur lors de la sauvegarde du commentaire: " + error, Toast.LENGTH_LONG).show();
+                        Toast.makeText(PlantInfoActivity.this, getString(R.string.verification_error, error), Toast.LENGTH_LONG).show();
                     });
                 }
             });

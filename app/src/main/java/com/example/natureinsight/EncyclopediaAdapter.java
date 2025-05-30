@@ -34,7 +34,6 @@ public class EncyclopediaAdapter extends RecyclerView.Adapter<EncyclopediaAdapte
         holder.nameTextView.setText(item.name);
         holder.descriptionTextView.setText(item.description);
         
-        // Make the entire item clickable
         holder.itemView.setOnClickListener(v -> {
             String searchQuery = Uri.encode(item.name);
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=" + searchQuery));
@@ -42,7 +41,6 @@ public class EncyclopediaAdapter extends RecyclerView.Adapter<EncyclopediaAdapte
             context.startActivity(intent);
         });
         
-        // Add visual feedback
         holder.itemView.setClickable(true);
         holder.itemView.setFocusable(true);
     }

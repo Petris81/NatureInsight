@@ -186,6 +186,7 @@ public class PhotoActivity extends AppCompatActivity {
                                 intent.putExtra("plant_confidence", String.valueOf(confidenceInIdentification));
                                 intent.putExtra("plant_altitude", String.valueOf(altitudeOfObservation));
                                 intent.putExtra("scientific_name", String.valueOf(scientificName));
+                                intent.putExtra("observation_datetime", data.get("observationdatetime").toString());
                                 Log.d("PhotoActivity", "onSuccess: " + data.toString());
                                 startActivity(intent);
                                 finish();

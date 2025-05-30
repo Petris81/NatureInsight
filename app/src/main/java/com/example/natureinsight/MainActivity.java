@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         });
         int count = databaseManager.loadFromCSV(this, "data.csv");
         if (count == 0) {
-            // TODO : think about how to handle it
         }
     }
 

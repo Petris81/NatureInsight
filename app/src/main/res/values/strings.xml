@@ -46,4 +46,10 @@
     <string name="unknown">Unknown</string>
     <string name="latitude">Lat:</string>
     <string name="longitude">Long:</string>
+    <string name="save_success">Save successful</string>
+    <string name="update_failed">Error: update was not applied</string>
+    <string name="record_not_found_after_update">Error: record not found after update</string>
+    <string name="verification_error">Error during verification: %1$s</string>
+    <string name="save_error">Error saving comment: %1$s</string>
+    <string name="record_not_found">Record not found</string>
 </resources>

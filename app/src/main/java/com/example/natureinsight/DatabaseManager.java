@@ -21,15 +21,12 @@ public class DatabaseManager {
     private static final String TAG = "DatabaseManager";
     private static final String DATABASE_NAME = "NatureInsightDB";
     private static final int DATABASE_VERSION = 1;
-    
-    // Table name and columns
     public static final String TABLE_ECOSYSTEM_SERVICES = "ecosystem_services";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_SERVICE = "service";
     public static final String COLUMN_SPECIES = "species";
     public static final String COLUMN_VALUE = "value";
     public static final String COLUMN_RELIABILITY = "reliability";
-
     private static final String CREATE_TABLE_ECOSYSTEM_SERVICES = 
             "CREATE TABLE " + TABLE_ECOSYSTEM_SERVICES + " (" +
             COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +

@@ -43,7 +43,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         holder.dateText.setText(formattedDate);
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, PlantInfoActivity.class);
-            intent.putExtra("observation_datetime", item.date.replace("T", " "));
+            intent.putExtra("observation_datetime", item.date);
             intent.putExtra("plant_name", item.title);
             intent.putExtra("plant_date", formattedDate);
             intent.putExtra("plant_image", item.pictureUrl);

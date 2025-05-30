@@ -288,7 +288,7 @@ public class SupabaseAuth {
             return;
         }
 
-        // Query with limit=50 and order by observationdatetime in descending order
+        // query with limit=50 and order by observationdatetime in descending order
         Request request = new Request.Builder()
                 .url(SUPABASE_URL + "/rest/v1/plant_observations?userid=eq." + currentUserId + "&order=observationdatetime.desc&limit=50")
                 .addHeader("apikey", SUPABASE_KEY)
@@ -410,8 +410,7 @@ public class SupabaseAuth {
     }
     private void refreshToken(AuthCallback callback) {
         if (refreshToken == null) {
-            Log.e(TAG, "No refresh token available need to re-authenticate");
-            // Clear all credentials since we can't refresh
+            Log.e(TAG, "pas de refresh token");
             currentUserToken = null;
             currentUserId = null;
             currentUserEmail = null;
@@ -420,7 +419,6 @@ public class SupabaseAuth {
             callback.onError("Session expired.");
             return;
         }
-
         JsonObject jsonBody = new JsonObject();
         jsonBody.addProperty("refresh_token", refreshToken);
 
@@ -437,22 +435,22 @@ public class SupabaseAuth {
     private void executeDataRequest(Request request, DataCallback callback) {
         new Thread(() -> {
             try (Response response = client.newCall(request).execute()) {
+                if (request.body() != null) {
+                    Log.d(TAG, "Request body: " + request.body().toString());
+                }
+                
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "Unknown error";
                     
-                    // Check if token is expired
                     if (response.code() == 401 && errorBody.contains("JWT expired")) {
-                        // Try to refresh the token
                         refreshToken(new AuthCallback() {
                             @Override
                             public void onSuccess(String token) {
-                                // Retry the original request with new token
                                 Request newRequest = request.newBuilder()
                                         .header("Authorization", "Bearer " + token)
                                         .build();
                                 executeDataRequest(newRequest, callback);
                             }
-
                             @Override
                             public void onError(String error) {
                                 callback.onError("Token refresh failed: " + error);
@@ -461,13 +459,18 @@ public class SupabaseAuth {
                         return;
                     }
                     
-                    Log.e(TAG, "Request failed: " + errorBody);
                     callback.onError(errorBody);
                     return;
                 }
 
                 String responseBody = response.body().string();
-                Log.d(TAG, "Response body: " + responseBody);
+                if (responseBody.equals("[]") && request.method().equals("PATCH")) {
+                    JsonObject successResponse = new JsonObject();
+                    successResponse.addProperty("success", true);
+                    callback.onSuccess(successResponse);
+                    return;
+                }
+                
                 JsonElement jsonElement = JsonParser.parseString(responseBody);
                 
                 if (jsonElement.isJsonArray()) {
@@ -476,7 +479,9 @@ public class SupabaseAuth {
                         JsonObject jsonObject = jsonArray.get(0).getAsJsonObject();
                         callback.onSuccess(jsonObject);
                     } else {
-                        callback.onSuccess(new JsonObject());
+                        JsonObject emptyResponse = new JsonObject();
+                        emptyResponse.addProperty("success", true);
+                        callback.onSuccess(emptyResponse);
                     }
                 } else if (jsonElement.isJsonObject()) {
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -487,7 +492,6 @@ public class SupabaseAuth {
                     callback.onSuccess(result);
                 }
             } catch (IOException e) {
-                Log.e(TAG, "Request failed", e);
                 callback.onError(e.getMessage());
             }
         }).start();
