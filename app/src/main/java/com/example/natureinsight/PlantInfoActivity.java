@@ -29,7 +29,8 @@ public class PlantInfoActivity extends AppCompatActivity {
 
     private static final String TAG = "PlantInfoActivity";
     private static final String SUPABASE_URL = "https://pnwcnyojlyuzvzfzcmtm.supabase.co";
-    private TextView plantNameText, dateText, positionText, altitudeText, confidenceText, scientificNameText, existingComment, commentLabel;
+    private TextView plantNameText, dateText, positionText, altitudeText, confidenceText, scientificNameText,
+            existingComment, commentLabel;
     private ImageView imageView;
     private SupabaseAuth supabaseAuth;
     private DatabaseManager databaseManager;
@@ -37,7 +38,6 @@ public class PlantInfoActivity extends AppCompatActivity {
 
     private EditText commentInput;
     private Button saveCommentButton, addCommentButton;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,8 @@ public class PlantInfoActivity extends AppCompatActivity {
         scientificNameText.setText(scientificName != null ? scientificName : "");
         updateEcosystemServices(scientificName);
         dateText.setText(getString(R.string.observation_date) + " " + plantDate);
-        positionText.setText(getString(R.string.position) + " " + getString(R.string.latitude) + plantLatitude + ", " + getString(R.string.longitude) + plantLongitude);
+        positionText.setText(getString(R.string.position) + " " + getString(R.string.latitude) + plantLatitude + ", "
+                + getString(R.string.longitude) + plantLongitude);
         altitudeText.setText(getString(R.string.altitude) + " " + plantAltitude);
         confidenceText.setText(getString(R.string.confidence) + " " + plantConfidence);
         Bitmap photo = getIntent().getParcelableExtra("photo_bitmap");
@@ -101,12 +102,12 @@ public class PlantInfoActivity extends AppCompatActivity {
                                 if (signedUrl.contains("supabase.co")) {
                                     finalUrl = signedUrl;
                                 } else {
-                                    finalUrl = SUPABASE_URL +"/storage/v1"+ signedUrl;
+                                    finalUrl = SUPABASE_URL + "/storage/v1" + signedUrl;
                                 }
                                 Log.d(TAG, "signedUrl: " + signedUrl);
                                 Log.d(TAG, "Supabase: " + SUPABASE_URL);
                                 Log.d(TAG, "Loading image from signed URL: " + finalUrl);
-                                
+
                                 Glide.with(PlantInfoActivity.this)
                                         .load(finalUrl)
                                         .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -118,14 +119,14 @@ public class PlantInfoActivity extends AppCompatActivity {
                         public void onError(String error) {
                             Log.e(TAG, "Failed to get signed URL: " + error);
                             runOnUiThread(() -> {
-                                Toast.makeText(PlantInfoActivity.this, 
-                                    getString(R.string.error_loading_image), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(PlantInfoActivity.this,
+                                        getString(R.string.error_loading_image), Toast.LENGTH_SHORT).show();
                             });
                         }
                     });
                 } else {
                     final String finalUrl = formatUrl(imageUrl);
-                        
+
                     Glide.with(this)
                             .load(finalUrl)
                             .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -144,43 +145,45 @@ public class PlantInfoActivity extends AppCompatActivity {
         });
         findViewById(R.id.save_comment_button).setOnClickListener(v -> {
             if (plantDate == null) {
-                Toast.makeText(PlantInfoActivity.this, "Erreur: date d'observation manquante", Toast.LENGTH_SHORT).show();
+                Toast.makeText(PlantInfoActivity.this, "Erreur: date d'observation manquante", Toast.LENGTH_SHORT)
+                        .show();
                 return;
             }
 
             JsonObject updateData = new JsonObject();
             updateData.addProperty("noteutilisateur", commentInput.getText().toString());
-            
+
             String timestamp = getIntent().getStringExtra("observation_datetime");
             if (timestamp != null) {
                 try {
                     timestamp = timestamp.replaceAll("^\"|\"$", "");
                     java.time.LocalDateTime dateTime = java.time.LocalDateTime.parse(timestamp);
-                    timestamp = dateTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
+                    timestamp = dateTime
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
                 } catch (Exception e) {
                     Log.e(TAG, "Error formatting timestamp: " + e.getMessage());
                 }
             }
             String encodedUserId = Uri.encode(supabaseAuth.getCurrentUserId());
             String encodedPlantName = Uri.encode(plantName);
-            String encodedTimestamp = timestamp.toString();//Uri.encode(timestamp);
+            String encodedTimestamp = timestamp.toString();// Uri.encode(timestamp);
             String selectQuery = String.format("userid=eq.%s&plantname=eq.%s&observationdatetime=eq.%s",
-                encodedUserId,
-                encodedPlantName,
-                encodedTimestamp);
+                    encodedUserId,
+                    encodedPlantName,
+                    encodedTimestamp);
 
             Log.d(TAG, "Select query: " + selectQuery);
-            
-            //irst we verify the record exist
+
+            // irst we verify the record exist
             supabaseAuth.select("plant_observations", selectQuery, new DataListCallback() {
                 @Override
                 public void onSuccess(JsonArray data) {
                     if (data != null && data.size() > 0) {
                         String updateQuery = String.format("userid=eq.%s&plantname=eq.%s&observationdatetime=eq.%s",
-                            encodedUserId,
-                            encodedPlantName,
-                            encodedTimestamp);
-                        
+                                encodedUserId,
+                                encodedPlantName,
+                                encodedTimestamp);
+
                         JsonObject updateData = new JsonObject();
                         updateData.addProperty("noteutilisateur", commentInput.getText().toString());
                         supabaseAuth.update("plant_observations", updateQuery, updateData, new DataCallback() {
@@ -193,22 +196,30 @@ public class PlantInfoActivity extends AppCompatActivity {
                                             if (verifyData.size() > 0) {
                                                 JsonObject updatedRecord = verifyData.get(0).getAsJsonObject();
                                                 String updatedNote = null;
-                                                if (updatedRecord.has("noteutilisateur") && !updatedRecord.get("noteutilisateur").isJsonNull()) {
+                                                if (updatedRecord.has("noteutilisateur")
+                                                        && !updatedRecord.get("noteutilisateur").isJsonNull()) {
                                                     updatedNote = updatedRecord.get("noteutilisateur").getAsString();
                                                 }
-                                                
-                                                if (updatedNote != null && updatedNote.equals(commentInput.getText().toString())) {
-                                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.save_success), Toast.LENGTH_SHORT).show();
+
+                                                if (updatedNote != null
+                                                        && updatedNote.equals(commentInput.getText().toString())) {
+                                                    Toast.makeText(PlantInfoActivity.this,
+                                                            getString(R.string.save_success), Toast.LENGTH_SHORT)
+                                                            .show();
                                                     commentInput.setVisibility(View.GONE);
                                                     saveCommentButton.setVisibility(View.GONE);
                                                     addCommentButton.setVisibility(View.VISIBLE);
                                                     existingComment.setText(commentInput.getText().toString());
                                                     commentLabel.setVisibility(View.VISIBLE);
                                                 } else {
-                                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.update_failed), Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(PlantInfoActivity.this,
+                                                            getString(R.string.update_failed), Toast.LENGTH_LONG)
+                                                            .show();
                                                 }
                                             } else {
-                                                Toast.makeText(PlantInfoActivity.this, getString(R.string.record_not_found_after_update), Toast.LENGTH_LONG).show();
+                                                Toast.makeText(PlantInfoActivity.this,
+                                                        getString(R.string.record_not_found_after_update),
+                                                        Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     }
@@ -216,7 +227,9 @@ public class PlantInfoActivity extends AppCompatActivity {
                                     @Override
                                     public void onError(String error) {
                                         runOnUiThread(() -> {
-                                            Toast.makeText(PlantInfoActivity.this, getString(R.string.verification_error, error), Toast.LENGTH_LONG).show();
+                                            Toast.makeText(PlantInfoActivity.this,
+                                                    getString(R.string.verification_error, error), Toast.LENGTH_LONG)
+                                                    .show();
                                         });
                                     }
                                 });
@@ -225,13 +238,15 @@ public class PlantInfoActivity extends AppCompatActivity {
                             @Override
                             public void onError(String error) {
                                 runOnUiThread(() -> {
-                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.save_error, error), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(PlantInfoActivity.this, getString(R.string.save_error, error),
+                                            Toast.LENGTH_LONG).show();
                                 });
                             }
                         });
                     } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(PlantInfoActivity.this, getString(R.string.record_not_found), Toast.LENGTH_LONG).show();
+                            Toast.makeText(PlantInfoActivity.this, getString(R.string.record_not_found),
+                                    Toast.LENGTH_LONG).show();
                         });
                     }
                 }
@@ -239,7 +254,8 @@ public class PlantInfoActivity extends AppCompatActivity {
                 @Override
                 public void onError(String error) {
                     runOnUiThread(() -> {
-                        Toast.makeText(PlantInfoActivity.this, getString(R.string.verification_error, error), Toast.LENGTH_LONG).show();
+                        Toast.makeText(PlantInfoActivity.this, getString(R.string.verification_error, error),
+                                Toast.LENGTH_LONG).show();
                     });
                 }
             });
@@ -251,18 +267,16 @@ public class PlantInfoActivity extends AppCompatActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         });
-        findViewById(R.id.nav_encyclopedia).setOnClickListener(v ->
-                startActivity(new Intent(this, EncyclopediaActivity.class)));
+        findViewById(R.id.nav_encyclopedia)
+                .setOnClickListener(v -> startActivity(new Intent(this, EncyclopediaActivity.class)));
 
-        findViewById(R.id.nav_camera).setOnClickListener(v ->
-                    startActivity(new Intent(this, PhotoActivity.class)));
+        findViewById(R.id.nav_camera).setOnClickListener(v -> startActivity(new Intent(this, PhotoActivity.class)));
 
-        findViewById(R.id.nav_history).setOnClickListener(v ->
-                startActivity(new Intent(this, HistoryActivity.class)));
+        findViewById(R.id.nav_history).setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
 
-        findViewById(R.id.nav_account).setOnClickListener(v ->
-                startActivity(new Intent(this, AccountActivity.class)));
+        findViewById(R.id.nav_account).setOnClickListener(v -> startActivity(new Intent(this, AccountActivity.class)));
     }
+
     private String formatUrl(String url) {
         if (url == null || url.isEmpty()) {
             return url;
@@ -279,6 +293,7 @@ public class PlantInfoActivity extends AppCompatActivity {
 
         return url;
     }
+
     private String extractFilePath(String url) {
         try {
             int startIndex = url.indexOf("plantimages/");
@@ -291,6 +306,7 @@ public class PlantInfoActivity extends AppCompatActivity {
         }
         return null;
     }
+
     private void updateEcosystemServices(String scientificName) {
         if (scientificName == null || scientificName.isEmpty()) {
             return;

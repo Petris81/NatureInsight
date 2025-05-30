@@ -61,6 +61,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     public int getItemCount() {
         return items.size();
     }
+
     private String formatDate(String isoDate) {
         try {
             String cleanDate = isoDate.replace("T", " ");

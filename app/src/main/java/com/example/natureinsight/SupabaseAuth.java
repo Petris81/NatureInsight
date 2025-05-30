@@ -23,6 +23,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.MultipartBody;
+
 public class SupabaseAuth {
     private static final String TAG = "SupabaseAuth";
     private static final String SUPABASE_URL = "https://pnwcnyojlyuzvzfzcmtm.supabase.co";
@@ -30,7 +31,7 @@ public class SupabaseAuth {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
-    
+
     private static final String PREFS_NAME = "NatureInsightPrefs";
     private static final String KEY_AUTH_TOKEN = "auth_token";
     private static final String KEY_USER_ID = "user_id";
@@ -44,7 +45,8 @@ public class SupabaseAuth {
     private String refreshToken;
     private Context appContext;
 
-    private SupabaseAuth() {}
+    private SupabaseAuth() {
+    }
 
     public static synchronized SupabaseAuth getInstance() {
         if (instance == null) {
@@ -52,29 +54,32 @@ public class SupabaseAuth {
         }
         return instance;
     }
+
     public void init(Context context) {
         this.appContext = context.getApplicationContext();
         loadStoredCredentials();
     }
 
     private void loadStoredCredentials() {
-        if (appContext == null) return;
-        
+        if (appContext == null)
+            return;
+
         SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         currentUserToken = prefs.getString(KEY_AUTH_TOKEN, null);
         currentUserId = prefs.getString(KEY_USER_ID, null);
         currentUserEmail = prefs.getString(KEY_USER_EMAIL, null);
         refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null);
-        
+
         Log.d(TAG, "Loaded stored credentials: " + (currentUserToken != null ? "Token exists" : "No token"));
     }
 
     private void saveCredentials() {
-        if (appContext == null) return;
-        
+        if (appContext == null)
+            return;
+
         SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        
+
         if (currentUserToken != null) {
             editor.putString(KEY_AUTH_TOKEN, currentUserToken);
             editor.putString(KEY_USER_ID, currentUserId);
@@ -86,7 +91,7 @@ public class SupabaseAuth {
             editor.remove(KEY_USER_EMAIL);
             editor.remove(KEY_REFRESH_TOKEN);
         }
-        
+
         editor.apply();
     }
 
@@ -98,26 +103,37 @@ public class SupabaseAuth {
     public String getCurrentUserEmail() {
         return currentUserEmail;
     }
+
     public interface AuthCallback {
         void onSuccess(String token);
+
         void onError(String error);
     }
+
     public interface DataCallback {
         void onSuccess(JsonObject data);
+
         void onError(String error);
     }
+
     public interface DataListCallback {
         void onSuccess(JsonArray data);
+
         void onError(String error);
     }
+
     public interface PlantObservationCallback {
         void onSuccess(JsonObject data);
+
         void onError(String error);
     }
+
     public interface FileUploadCallback {
         void onSuccess(String fileUrl);
+
         void onError(String error);
     }
+
     public void signUp(String email, String password, AuthCallback callback) {
         JsonObject jsonBody = new JsonObject();
         jsonBody.addProperty("email", email);
@@ -133,6 +149,7 @@ public class SupabaseAuth {
 
         executeAuthRequest(request, callback);
     }
+
     public void signIn(String email, String password, AuthCallback callback) {
         JsonObject jsonBody = new JsonObject();
         jsonBody.addProperty("email", email);
@@ -148,6 +165,7 @@ public class SupabaseAuth {
 
         executeAuthRequest(request, callback);
     }
+
     public void signOut() {
         currentUserToken = null;
         currentUserId = null;
@@ -155,6 +173,7 @@ public class SupabaseAuth {
         refreshToken = null;
         saveCredentials();
     }
+
     public boolean isAuthenticated() {
         return currentUserToken != null;
     }
@@ -216,6 +235,7 @@ public class SupabaseAuth {
 
         executeDataRequest(request, callback);
     }
+
     public void delete(String table, String id, DataCallback callback) {
         if (!isAuthenticated()) {
             callback.onError("User not authenticated");
@@ -231,6 +251,7 @@ public class SupabaseAuth {
 
         executeDataRequest(request, callback);
     }
+
     public void insertPlantObservation(
             String plantName,
             double latitude,
@@ -240,7 +261,7 @@ public class SupabaseAuth {
             String pictureOfObservation,
             String scientificName,
             PlantObservationCallback callback) {
-        
+
         if (!isAuthenticated()) {
             callback.onError("User not authenticated");
             return;
@@ -289,7 +310,8 @@ public class SupabaseAuth {
 
         // query with limit=50 and order by observationdatetime in descending order
         Request request = new Request.Builder()
-                .url(SUPABASE_URL + "/rest/v1/plant_observations?userid=eq." + currentUserId + "&order=observationdatetime.desc&limit=50")
+                .url(SUPABASE_URL + "/rest/v1/plant_observations?userid=eq." + currentUserId
+                        + "&order=observationdatetime.desc&limit=50")
                 .addHeader("apikey", SUPABASE_KEY)
                 .addHeader("Authorization", "Bearer " + currentUserToken)
                 .get()
@@ -297,14 +319,16 @@ public class SupabaseAuth {
 
         executeDataListRequest(request, callback);
     }
+
     public void uploadImage(byte[] imageData, String fileName, FileUploadCallback callback) {
         if (!isAuthenticated()) {
             callback.onError("User not authenticated");
             return;
         }
 
-        //supabase storage bucket policy is that each user only has access to the folder 
-        //haveing their id as the name of the folder
+        // supabase storage bucket policy is that each user only has access to the
+        // folder
+        // haveing their id as the name of the folder
         String filePath = currentUserId + "/" + fileName;
 
         RequestBody requestBody = new MultipartBody.Builder()
@@ -334,6 +358,7 @@ public class SupabaseAuth {
             }
         }).start();
     }
+
     public void getSignedImageUrl(String filePath, FileUploadCallback callback) {
         if (!isAuthenticated()) {
             callback.onError("User not authenticated");
@@ -342,7 +367,7 @@ public class SupabaseAuth {
         JsonObject jsonBody = new JsonObject();
         jsonBody.addProperty("token", currentUserToken);
         jsonBody.addProperty("expiresIn", 3600);
-        
+
         RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
         Request request = new Request.Builder()
                 .url(SUPABASE_URL + "/storage/v1/object/sign/plantimages/" + filePath)
@@ -361,7 +386,7 @@ public class SupabaseAuth {
                 }
                 String responseBody = response.body().string();
                 JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
-                
+
                 if (jsonResponse.has("signedURL")) {
                     String signedUrl = jsonResponse.get("signedURL").getAsString();
                     callback.onSuccess(signedUrl);
@@ -374,28 +399,29 @@ public class SupabaseAuth {
             }
         }).start();
     }
+
     private void executeAuthRequest(Request request, AuthCallback callback) {
         new Thread(() -> {
             try {
                 Response response = client.newCall(request).execute();
                 String responseBody = response.body().string();
-                
+
                 if (response.isSuccessful()) {
                     JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                     currentUserToken = jsonResponse.get("access_token").getAsString();
                     currentUserId = jsonResponse.get("user").getAsJsonObject().get("id").getAsString();
-                    
+
                     if (jsonResponse.has("refresh_token")) {
                         refreshToken = jsonResponse.get("refresh_token").getAsString();
                         Log.d(TAG, "Refresh token saved successfully");
                     } else {
                         Log.e(TAG, "No refresh token in response");
                     }
-                    
+
                     saveCredentials();
-                    Log.d(TAG, "Credentials saved: " + (currentUserToken != null ? "Token exists" : "No token") + 
-                          ", Refresh token: " + (refreshToken != null ? "exists" : "missing"));
-                    
+                    Log.d(TAG, "Credentials saved: " + (currentUserToken != null ? "Token exists" : "No token") +
+                            ", Refresh token: " + (refreshToken != null ? "exists" : "missing"));
+
                     callback.onSuccess(currentUserToken);
                 } else {
                     Log.e(TAG, "Auth error: " + responseBody);
@@ -407,6 +433,7 @@ public class SupabaseAuth {
             }
         }).start();
     }
+
     private void refreshToken(AuthCallback callback) {
         if (refreshToken == null) {
             Log.e(TAG, "pas de refresh token");
@@ -431,16 +458,17 @@ public class SupabaseAuth {
 
         executeAuthRequest(request, callback);
     }
+
     private void executeDataRequest(Request request, DataCallback callback) {
         new Thread(() -> {
             try (Response response = client.newCall(request).execute()) {
                 if (request.body() != null) {
                     Log.d(TAG, "Request body: " + request.body().toString());
                 }
-                
+
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "Unknown error";
-                    
+
                     if (response.code() == 401 && errorBody.contains("JWT expired")) {
                         refreshToken(new AuthCallback() {
                             @Override
@@ -450,6 +478,7 @@ public class SupabaseAuth {
                                         .build();
                                 executeDataRequest(newRequest, callback);
                             }
+
                             @Override
                             public void onError(String error) {
                                 callback.onError("Token refresh failed: " + error);
@@ -457,7 +486,7 @@ public class SupabaseAuth {
                         });
                         return;
                     }
-                    
+
                     callback.onError(errorBody);
                     return;
                 }
@@ -469,9 +498,9 @@ public class SupabaseAuth {
                     callback.onSuccess(successResponse);
                     return;
                 }
-                
+
                 JsonElement jsonElement = JsonParser.parseString(responseBody);
-                
+
                 if (jsonElement.isJsonArray()) {
                     JsonArray jsonArray = jsonElement.getAsJsonArray();
                     if (jsonArray.size() > 0) {
@@ -495,6 +524,7 @@ public class SupabaseAuth {
             }
         }).start();
     }
+
     private void executeDataListRequest(Request request, DataListCallback callback) {
         new Thread(() -> {
             try (Response response = client.newCall(request).execute()) {
@@ -517,7 +547,7 @@ public class SupabaseAuth {
                         });
                         return;
                     }
-                    
+
                     Log.e(TAG, "Request failed: " + errorBody);
                     callback.onError(errorBody);
                     return;
@@ -546,4 +576,4 @@ public class SupabaseAuth {
             }
         }).start();
     }
-} 
+}

@@ -23,11 +23,17 @@ public class HistoryItem {
         this.id = jsonObject.has("id") ? jsonObject.get("id").getAsString() : "";
         this.title = jsonObject.has("plantname") ? jsonObject.get("plantname").getAsString() : "";
         this.date = jsonObject.has("observationdatetime") ? jsonObject.get("observationdatetime").getAsString() : "";
-        this.pictureUrl = jsonObject.has("pictureofobservation") ? jsonObject.get("pictureofobservation").getAsString() : "";
+        this.pictureUrl = jsonObject.has("pictureofobservation") ? jsonObject.get("pictureofobservation").getAsString()
+                : "";
         this.latitude = jsonObject.has("latitude") ? Double.parseDouble(jsonObject.get("latitude").getAsString()) : 0.0;
-        this.longitude = jsonObject.has("longitude") ? Double.parseDouble(jsonObject.get("longitude").getAsString()) : 0.0;
-        this.confidenceInIdentification = jsonObject.has("confidenceinidentification") ? jsonObject.get("confidenceinidentification").getAsInt() : 0;
-        this.altitudeOfObservation = jsonObject.has("altitudeofobservation") ? jsonObject.get("altitudeofobservation").getAsInt() : 0;
+        this.longitude = jsonObject.has("longitude") ? Double.parseDouble(jsonObject.get("longitude").getAsString())
+                : 0.0;
+        this.confidenceInIdentification = jsonObject.has("confidenceinidentification")
+                ? jsonObject.get("confidenceinidentification").getAsInt()
+                : 0;
+        this.altitudeOfObservation = jsonObject.has("altitudeofobservation")
+                ? jsonObject.get("altitudeofobservation").getAsInt()
+                : 0;
         this.noteUtilisateur = jsonObject.has("noteutilisateur") ? jsonObject.get("noteutilisateur").getAsString() : "";
     }
 }

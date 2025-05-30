@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat;
 
 public class GradientValueView extends View {
     private Paint cursorPaint;
-    private float value = 0.0f; //value betweeen 0 and 1
+    private float value = 0.0f; // value betweeen 0 and 1
     private Drawable gradientLine;
     private int cursorWidth = 8;
     private int cursorHeight = 20;
@@ -36,21 +36,20 @@ public class GradientValueView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        
+
         // gradient line
-        gradientLine.setBounds(0, getHeight()/2 - 4, getWidth(), getHeight()/2 + 2);
+        gradientLine.setBounds(0, getHeight() / 2 - 4, getWidth(), getHeight() / 2 + 2);
         gradientLine.draw(canvas);
-        
-        //cursor
+
+        // cursor
         float cursorX = value * getWidth();
-        float cursorY = getHeight()/2;
+        float cursorY = getHeight() / 2;
         canvas.drawRect(
-            cursorX - cursorWidth/2,
-            cursorY - cursorHeight/2,
-            cursorX + cursorWidth/2,
-            cursorY + cursorHeight/2,
-            cursorPaint
-        );
+                cursorX - cursorWidth / 2,
+                cursorY - cursorHeight / 2,
+                cursorX + cursorWidth / 2,
+                cursorY + cursorHeight / 2,
+                cursorPaint);
     }
 
     public void setValue(float value) {
@@ -64,4 +63,4 @@ public class GradientValueView extends View {
         int height = resolveSize(desiredHeight, heightMeasureSpec);
         setMeasuredDimension(widthMeasureSpec, height);
     }
-} 
+}

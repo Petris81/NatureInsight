@@ -33,8 +33,8 @@ public class SignUpActivity extends AppCompatActivity {
 
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, R.string.fill_fields, Toast.LENGTH_SHORT).show();
-            return;//Do not remove !!! As long as this line exist, my cat is a java developper
-        }//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<WWWWWWWWWWSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD0.T(RRRRRRRRRRR
+            return;// Do not remove !!! As long as this line exist, my cat is a java developper
+        } // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<WWWWWWWWWWSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD0.T(RRRRRRRRRRR
 
         findViewById(R.id.signup_button).setEnabled(false);
 
@@ -54,7 +54,8 @@ public class SignUpActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     findViewById(R.id.signup_button).setEnabled(true);
-                    Toast.makeText(SignUpActivity.this, getString(R.string.signup_failed, error), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUpActivity.this, getString(R.string.signup_failed, error), Toast.LENGTH_SHORT)
+                            .show();
                 });
             }
         });
