@@ -27,28 +27,30 @@ public class DatabaseManager {
     public static final String COLUMN_SPECIES = "species";
     public static final String COLUMN_VALUE = "value";
     public static final String COLUMN_RELIABILITY = "reliability";
-    private static final String CREATE_TABLE_ECOSYSTEM_SERVICES = 
-            "CREATE TABLE " + TABLE_ECOSYSTEM_SERVICES + " (" +
+    private static final String CREATE_TABLE_ECOSYSTEM_SERVICES = "CREATE TABLE " + TABLE_ECOSYSTEM_SERVICES + " (" +
             COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_SERVICE + " TEXT NOT NULL, " +
             COLUMN_SPECIES + " TEXT NOT NULL, " +
             COLUMN_VALUE + " REAL NOT NULL, " +
             COLUMN_RELIABILITY + " REAL NOT NULL);";
-    
+
     private static DatabaseManager instance;
     private DatabaseHelper dbHelper;
     private SQLiteDatabase database;
-    
+
     /**
      * We private the constructor to avoid direct instantiation
      */
-    private DatabaseManager() {}
+    private DatabaseManager() {
+    }
+
     public static synchronized DatabaseManager getInstance() {
         if (instance == null) {
             instance = new DatabaseManager();
         }
         return instance;
     }
+
     public void init(Context context) {
         dbHelper = new DatabaseHelper(context.getApplicationContext());
         database = dbHelper.getWritableDatabase();
@@ -58,13 +60,13 @@ public class DatabaseManager {
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
-        
+
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(CREATE_TABLE_ECOSYSTEM_SERVICES);
             Log.d(TAG, "Database created");
         }
-        
+
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_ECOSYSTEM_SERVICES);
@@ -81,27 +83,28 @@ public class DatabaseManager {
 
         return database.insert(TABLE_ECOSYSTEM_SERVICES, null, values);
     }
-    
+
     /**
      * query fo a ecosystem service from a specific specie
+     * 
      * @return list of EcosystemService objects
      */
     public List<EcosystemService> queryEcosystemServices(String service, String species) {
         List<EcosystemService> services = new ArrayList<>();
         String selection = "";
         String[] selectionArgs = null;
-        
+
         if (service != null && species != null) {
             selection = COLUMN_SERVICE + " = ? AND " + COLUMN_SPECIES + " = ?";
-            selectionArgs = new String[]{service, species};
+            selectionArgs = new String[] { service, species };
         } else if (service != null) {
             selection = COLUMN_SERVICE + " = ?";
-            selectionArgs = new String[]{service};
+            selectionArgs = new String[] { service };
         } else if (species != null) {
             selection = COLUMN_SPECIES + " = ?";
-            selectionArgs = new String[]{species};
+            selectionArgs = new String[] { species };
         }
-        
+
         Cursor cursor = database.query(
                 TABLE_ECOSYSTEM_SERVICES,
                 null,
@@ -109,9 +112,8 @@ public class DatabaseManager {
                 selectionArgs,
                 null,
                 null,
-                COLUMN_SERVICE + " ASC, " + COLUMN_SPECIES + " ASC"
-        );
-        
+                COLUMN_SERVICE + " ASC, " + COLUMN_SPECIES + " ASC");
+
         if (cursor.moveToFirst()) {
             do {
                 EcosystemService ecosystemService = new EcosystemService(
@@ -119,16 +121,14 @@ public class DatabaseManager {
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SERVICE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SPECIES)),
                         cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_VALUE)),
-                        cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_RELIABILITY))
-                );
+                        cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_RELIABILITY)));
                 services.add(ecosystemService);
             } while (cursor.moveToNext());
         }
-        
+
         cursor.close();
         return services;
     }
-    
 
     public int loadFromCSV(Context context, String fileName) {
         int count = 0;
@@ -144,7 +144,7 @@ public class DatabaseManager {
                     String species = values[1].trim();
                     float value = Float.parseFloat(values[2].trim());
                     float reliability = Float.parseFloat(values[3].trim());
-                    
+
                     insertEcosystemService(service, species, value, reliability);
                     count++;
                 }
@@ -153,7 +153,7 @@ public class DatabaseManager {
             database.endTransaction();
             reader.close();
             inputStream.close();
-            Log.d(TAG, "loaded  records from CSV" + count );
+            Log.d(TAG, "loaded  records from CSV" + count);
             return count;
         } catch (IOException e) {
             Log.e(TAG, "error loading CSV : " + e.getMessage());
@@ -163,6 +163,7 @@ public class DatabaseManager {
             return -1;
         }
     }
+
     public void close() {
         if (database != null && database.isOpen()) {
             database.close();
@@ -172,4 +173,4 @@ public class DatabaseManager {
         }
     }
 
-} 
+}
