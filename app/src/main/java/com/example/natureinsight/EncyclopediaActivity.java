@@ -75,17 +75,14 @@ public class EncyclopediaActivity extends AppCompatActivity {
             encyclopediaList.setAdapter(adapter);
         });
 
-        findViewById(R.id.nav_encyclopedia).setOnClickListener(v ->
-                startActivity(new Intent(this, EncyclopediaActivity.class)));
+        findViewById(R.id.nav_encyclopedia)
+                .setOnClickListener(v -> startActivity(new Intent(this, EncyclopediaActivity.class)));
 
-        findViewById(R.id.nav_camera).setOnClickListener(v ->
-                    startActivity(new Intent(this, PhotoActivity.class)));
+        findViewById(R.id.nav_camera).setOnClickListener(v -> startActivity(new Intent(this, PhotoActivity.class)));
 
-        findViewById(R.id.nav_history).setOnClickListener(v ->
-                startActivity(new Intent(this, HistoryActivity.class)));
+        findViewById(R.id.nav_history).setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
 
-        findViewById(R.id.nav_account).setOnClickListener(v ->
-                startActivity(new Intent(this, AccountActivity.class)));
+        findViewById(R.id.nav_account).setOnClickListener(v -> startActivity(new Intent(this, AccountActivity.class)));
     }
 
     @Override
