@@ -12,6 +12,7 @@ public class HistoryItem {
     public int confidenceInIdentification;
     public int altitudeOfObservation;
     public String id;
+    public String noteUtilisateur;
 
     public HistoryItem(String title, String date) {
         this.title = title;
@@ -27,5 +28,6 @@ public class HistoryItem {
         this.longitude = jsonObject.has("longitude") ? Double.parseDouble(jsonObject.get("longitude").getAsString()) : 0.0;
         this.confidenceInIdentification = jsonObject.has("confidenceinidentification") ? jsonObject.get("confidenceinidentification").getAsInt() : 0;
         this.altitudeOfObservation = jsonObject.has("altitudeofobservation") ? jsonObject.get("altitudeofobservation").getAsInt() : 0;
+        this.noteUtilisateur = jsonObject.has("noteutilisateur") ? jsonObject.get("noteutilisateur").getAsString() : "";
     }
 }

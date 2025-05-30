@@ -72,7 +72,13 @@ public class PlantInfoActivity extends AppCompatActivity {
         String plantConfidence = getIntent().getStringExtra("plant_confidence");
         String scientificName = getIntent().getStringExtra("scientific_name");
         Integer plantAltitude = getIntent().getIntExtra("plant_altitude", 0);
+        String comment = getIntent().getStringExtra("noteutilisateur");
 
+        existingComment.setText(comment);
+        if (comment != null && !comment.isEmpty()) {
+            existingComment.setVisibility(View.VISIBLE);
+            commentLabel.setVisibility(View.VISIBLE);
+        }
         plantNameText.setText(plantName);
         scientificNameText.setText(scientificName != null ? scientificName : "");
         updateEcosystemServices(scientificName);
@@ -238,6 +244,7 @@ public class PlantInfoActivity extends AppCompatActivity {
                     });
                 }
             });
+            existingComment.setVisibility(View.VISIBLE);
         });
         findViewById(R.id.learn_more_button).setOnClickListener(v -> {
             String searchQuery = Uri.encode(plantName);

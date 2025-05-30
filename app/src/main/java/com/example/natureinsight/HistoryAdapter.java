@@ -52,6 +52,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
             intent.putExtra("plant_confidence", String.valueOf(item.confidenceInIdentification));
             intent.putExtra("plant_altitude", item.altitudeOfObservation);
             intent.putExtra("plant_id", item.id);
+            intent.putExtra("noteutilisateur", item.noteUtilisateur);
             context.startActivity(intent);
         });
     }
