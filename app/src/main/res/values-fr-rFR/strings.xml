@@ -47,4 +47,14 @@
     <string name="unknown">Inconnu</string>
     <string name="latitude">Lat. :</string>
     <string name="longitude">Long. :</string>
+    <string name="save_success">Sauvegarde effectuée</string>
+    <string name="update_failed">Erreur lors de la mise à jour</string>
+    <string name="record_not_found_after_update">Erreur lors de la mise à jour : enregistrement non trouvé</string>
+    <string name="verification_error">Erreur pendant la vérification: %1$s</string>
+    <string name="save_error">Erreur lors de la sauvegarde du commentaire: %1$s</string>
+    <string name="record_not_found">Enregistrement non trouvé</string>
+    <string name="comment_label">Commentaire :</string>
+    <string name="add_comment">Ajouter un commentaire</string>
+    <string name="save_comment">Enregistrer le commentaire</string>
+    <string name="comment_input_hint">Écrivez votre commentaire ici...</string>
 </resources>

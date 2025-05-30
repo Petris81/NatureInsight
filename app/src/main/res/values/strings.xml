@@ -52,4 +52,8 @@
     <string name="verification_error">Error during verification: %1$s</string>
     <string name="save_error">Error saving comment: %1$s</string>
     <string name="record_not_found">Record not found</string>
+    <string name="comment_label">Comment :</string>
+    <string name="add_comment">Add a Comment</string>
+    <string name="save_comment">Save Comment</string>
+    <string name="comment_input_hint">Write your comment here...</string>
 </resources>
