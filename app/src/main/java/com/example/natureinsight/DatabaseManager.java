@@ -153,13 +153,13 @@ public class DatabaseManager {
             database.endTransaction();
             reader.close();
             inputStream.close();
-            Log.d(TAG, "Loaded " + count + " records from CSV");
+            Log.d(TAG, "loaded  records from CSV" + count );
             return count;
         } catch (IOException e) {
-            Log.e(TAG, "Error loading CSV: " + e.getMessage());
+            Log.e(TAG, "error loading CSV : " + e.getMessage());
             return -1;
         } catch (NumberFormatException e) {
-            Log.e(TAG, "Error parsing CSV values: " + e.getMessage());
+            Log.e(TAG, "error parsing CSV values : " + e.getMessage());
             return -1;
         }
     }

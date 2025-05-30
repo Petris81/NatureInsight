@@ -31,7 +31,6 @@ public class SupabaseAuth {
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
     
-    // SharedPreferences keys
     private static final String PREFS_NAME = "NatureInsightPrefs";
     private static final String KEY_AUTH_TOKEN = "auth_token";
     private static final String KEY_USER_ID = "user_id";

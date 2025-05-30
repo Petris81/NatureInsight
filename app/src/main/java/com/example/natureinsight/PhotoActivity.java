@@ -39,9 +39,9 @@ public class PhotoActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private Location currentLocation;
     private int altitudeOfObservation = 0;
-    private int confidenceInIdentification = 0; // valeur par défault
-    private String plantName; // valeur par défaut
-    private String scientificName; // valeur par défaut
+    private int confidenceInIdentification = 0;
+    private String plantName;
+    private String scientificName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,8 +49,6 @@ public class PhotoActivity extends AppCompatActivity {
         supabaseAuth = SupabaseAuth.getInstance();
         plantIdentificationService = new PlantIdentificationService();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Initialize default strings
         plantName = getString(R.string.unknown);
         scientificName = getString(R.string.unknown);
 
@@ -62,7 +60,7 @@ public class PhotoActivity extends AppCompatActivity {
             openCamera();
         }
         
-        // Request location permission
+        
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,

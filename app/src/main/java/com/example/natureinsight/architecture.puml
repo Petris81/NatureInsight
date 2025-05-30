@@ -18,6 +18,7 @@ package "com.example.natureinsight" {
     - DatabaseManager databaseManager
     + onCreate()
     - handleLogin()
+    - onDestroy()
   }
   
   class SignUpActivity {
@@ -42,18 +43,26 @@ package "com.example.natureinsight" {
     - int altitudeOfObservation
     - int confidenceInIdentification
     - String plantName
+    - String scientificName
     + onCreate()
     - openCamera()
     - getCurrentLocation()
     - identifyPlant()
     - uploadImageToSupabase()
+    - onRequestPermissionsResult()
   }
   
   class PlantInfoActivity {
     - TextView plantNameText, dateText, positionText, altitudeText, confidenceText
     - ImageView imageView
     - SupabaseAuth supabaseAuth
+    - DatabaseManager databaseManager
+    - GradientValueView niFixationValue, solStructureValue, waterRetentionValue
+    - EditText commentInput
+    - Button saveCommentButton, addCommentButton
     + onCreate()
+    - formatUrl()
+    - extractFilePath()
   }
   
   class HistoryActivity {
@@ -63,6 +72,7 @@ package "com.example.natureinsight" {
     - SupabaseAuth supabaseAuth
     + onCreate()
     - loadHistoryFromSupabase()
+    + onResume()
   }
   
   class EncyclopediaActivity {
@@ -70,7 +80,9 @@ package "com.example.natureinsight" {
     - EncyclopediaAdapter adapter
     - List<EncyclopediaItem> items
     - List<EncyclopediaItem> allItems
+    - DatabaseManager databaseManager
     + onCreate()
+    - onDestroy()
   }
   
   ' Services
@@ -91,6 +103,11 @@ package "com.example.natureinsight" {
     + update(String, String, JsonObject, DataCallback)
     + delete(String, String, DataCallback)
     + uploadImage(byte[], String, FileUploadCallback)
+    + getSignedImageUrl(String, FileUploadCallback)
+    + getCurrentUserEmail()
+    + setCurrentUserEmail(String)
+    - loadStoredCredentials()
+    - saveCredentials()
   }
   
   class DatabaseManager {
@@ -151,6 +168,7 @@ package "com.example.natureinsight" {
   
   class EncyclopediaAdapter {
     - List<EncyclopediaItem> items
+    - Context context
     + onCreateViewHolder()
     + onBindViewHolder()
     + getItemCount()
@@ -201,10 +219,12 @@ AccountActivity --> SupabaseAuth : uses
 PhotoActivity --> SupabaseAuth : uses
 PhotoActivity --> PlantIdentificationService : uses
 PlantInfoActivity --> SupabaseAuth : uses
+PlantInfoActivity --> DatabaseManager : uses
 HistoryActivity --> SupabaseAuth : uses
 HistoryActivity --> HistoryAdapter : uses
 HistoryAdapter --> HistoryItem : adapts
 EncyclopediaActivity --> EncyclopediaAdapter : uses
+EncyclopediaActivity --> DatabaseManager : uses
 EncyclopediaAdapter --> EncyclopediaItem : adapts
 DatabaseManager --> EcosystemService : manages
 

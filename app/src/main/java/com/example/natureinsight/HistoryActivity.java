@@ -37,15 +37,12 @@ public class HistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
-        // init SupabaseAuth
         supabaseAuth = SupabaseAuth.getInstance();
 
-        // init views
         historyList = findViewById(R.id.history_list);
         
         historyList.setLayoutManager(new LinearLayoutManager(this));
 
-        // init empty list
         items = new ArrayList<>();
         adapter = new HistoryAdapter(items, this);
         historyList.setAdapter(adapter);

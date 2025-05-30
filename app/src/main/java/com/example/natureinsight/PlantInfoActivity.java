@@ -44,7 +44,6 @@ public class PlantInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plant_info);
 
-        // Initialize SupabaseAuth and DatabaseManager
         supabaseAuth = SupabaseAuth.getInstance();
         databaseManager = DatabaseManager.getInstance();
         databaseManager.init(this);

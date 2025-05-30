@@ -24,11 +24,9 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // init SupabaseAuth
         supabaseAuth = SupabaseAuth.getInstance();
         supabaseAuth.init(this);
         
-        // init DatabaseManager
         databaseManager = DatabaseManager.getInstance();
         databaseManager.init(this);
 
